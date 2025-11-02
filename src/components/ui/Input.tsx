@@ -289,7 +289,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 
     // Determinar si el input tiene valor
     React.useEffect(() => {
-      setHasValue(!!value || props.defaultValue);
+      setHasValue(!!value || !!props.defaultValue);
     }, [value, props.defaultValue]);
 
     // ========================================================================
