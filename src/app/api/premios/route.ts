@@ -157,17 +157,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       puntos_requeridos: parseInt(puntos_requeridos, 10),
       categoria,
       tipo,
-      imagen_url: imagen_url?.trim() || null,
+      imagen_url: imagen_url?.trim() || undefined,
       stock_disponible: stock_disponible ? parseInt(stock_disponible, 10) : 0,
       stock_ilimitado,
-      nivel_minimo: nivel_minimo ? parseInt(nivel_minimo, 10) : null,
-      valido_desde: valido_desde ? new Date(valido_desde) : null,
-      valido_hasta: valido_hasta ? new Date(valido_hasta) : null,
+      nivel_minimo: nivel_minimo ? parseInt(nivel_minimo, 10) : undefined,
+      valido_desde: valido_desde ? new Date(valido_desde) : undefined,
+      valido_hasta: valido_hasta ? new Date(valido_hasta) : undefined,
       condiciones,
       beneficios,
       restricciones,
       tags,
-      valor_estimado: valor_estimado ? parseFloat(valor_estimado) : null,
+      valor_estimado: valor_estimado ? parseFloat(valor_estimado) : undefined,
       activo: true
     });
 

@@ -97,33 +97,28 @@ export async function obtenerPremios(
 
     const totalPaginas = Math.ceil(total / limite);
 
-    // Formatear resultados
+    // Formatear resultados - SOLO campos que existen en el schema
     const premiosFormateados = premios.map(premio => ({
       id: premio.id,
       nombre: premio.nombre,
-      descripcion: premio.descripcion,
+      descripcion: premio.descripcion ?? undefined,
       puntos_requeridos: premio.puntosRequeridos,
-      nivel_lealtad_requerido_id: premio.nivelLealtadRequeridoId,
-      activo: premio.activo,
-      imagen_url: premio.imagenUrl,
-      categoria: premio.categoria,
-      tipo: premio.tipo,
-      stock_disponible: premio.stockDisponible,
-      stock_ilimitado: premio.stockIlimitado,
-      nivel_minimo: premio.nivelMinimo,
-      valido_desde: premio.validoDesde,
-      valido_hasta: premio.validoHasta,
-      condiciones: premio.condiciones,
-      beneficios: premio.beneficios,
-      restricciones: premio.restricciones,
-      tags: premio.tags,
-      valor_estimado: premio.valorEstimado,
-      creado_en: premio.createdAt,
-      actualizado_en: premio.updatedAt,
-      disponible: premio.activo && 
-                  (premio.stockIlimitado || (premio.stockDisponible && premio.stockDisponible > 0)) &&
-                  (!premio.validoDesde || new Date(premio.validoDesde) <= new Date()) &&
-                  (!premio.validoHasta || new Date(premio.validoHasta) >= new Date())
+      nivel_lealtad_requerido_id: premio.nivelLealtadRequeridoId ?? undefined,
+      activo: premio.activo ?? undefined,
+      // Campos adicionales no están en el schema - retornar undefined por compatibilidad
+      imagen_url: undefined,
+      categoria: undefined,
+      tipo: undefined,
+      stock_disponible: undefined,
+      stock_ilimitado: undefined,
+      nivel_minimo: undefined,
+      valido_desde: undefined,
+      valido_hasta: undefined,
+      condiciones: undefined,
+      beneficios: undefined,
+      restricciones: undefined,
+      tags: undefined,
+      valor_estimado: undefined
     }));
 
     console.log(`✅ Premios obtenidos: ${premiosFormateados.length} de ${total} totales`);
@@ -155,25 +150,24 @@ export async function obtenerPremioPorId(id: number): Promise<Premio | null> {
     return {
       id: premio.id,
       nombre: premio.nombre,
-      descripcion: premio.descripcion,
+      descripcion: premio.descripcion ?? undefined,
       puntos_requeridos: premio.puntosRequeridos,
-      nivel_lealtad_requerido_id: premio.nivelLealtadRequeridoId,
-      activo: premio.activo,
-      imagen_url: premio.imagenUrl,
-      categoria: premio.categoria,
-      tipo: premio.tipo,
-      stock_disponible: premio.stockDisponible,
-      stock_ilimitado: premio.stockIlimitado,
-      nivel_minimo: premio.nivelMinimo,
-      valido_desde: premio.validoDesde,
-      valido_hasta: premio.validoHasta,
-      condiciones: premio.condiciones,
-      beneficios: premio.beneficios,
-      restricciones: premio.restricciones,
-      tags: premio.tags,
-      valor_estimado: premio.valorEstimado,
-      creado_en: premio.createdAt,
-      actualizado_en: premio.updatedAt
+      nivel_lealtad_requerido_id: premio.nivelLealtadRequeridoId ?? undefined,
+      activo: premio.activo ?? undefined,
+      // Campos no existentes en schema - retornar undefined
+      imagen_url: undefined,
+      categoria: undefined,
+      tipo: undefined,
+      stock_disponible: undefined,
+      stock_ilimitado: undefined,
+      nivel_minimo: undefined,
+      valido_desde: undefined,
+      valido_hasta: undefined,
+      condiciones: undefined,
+      beneficios: undefined,
+      restricciones: undefined,
+      tags: undefined,
+      valor_estimado: undefined
     };
   } catch (error) {
     console.error('❌ Error obteniendo premio por ID:', error);
@@ -189,20 +183,8 @@ export async function crearPremio(datos: Omit<Premio, 'id' | 'creado_en' | 'actu
         descripcion: datos.descripcion,
         puntosRequeridos: datos.puntos_requeridos,
         nivelLealtadRequeridoId: datos.nivel_lealtad_requerido_id,
-        activo: datos.activo ?? true,
-        imagenUrl: datos.imagen_url,
-        categoria: datos.categoria,
-        tipo: datos.tipo,
-        stockDisponible: datos.stock_disponible,
-        stockIlimitado: datos.stock_ilimitado ?? false,
-        nivelMinimo: datos.nivel_minimo,
-        validoDesde: datos.valido_desde,
-        validoHasta: datos.valido_hasta,
-        condiciones: datos.condiciones,
-        beneficios: datos.beneficios,
-        restricciones: datos.restricciones,
-        tags: datos.tags,
-        valorEstimado: datos.valor_estimado
+        activo: datos.activo ?? true
+        // Campos NO existentes en schema omitidos
       }
     });
     
@@ -225,20 +207,7 @@ export async function actualizarPremio(id: number, datos: Partial<Omit<Premio, '
         ...(datos.descripcion !== undefined && { descripcion: datos.descripcion }),
         ...(datos.puntos_requeridos !== undefined && { puntosRequeridos: datos.puntos_requeridos }),
         ...(datos.nivel_lealtad_requerido_id !== undefined && { nivelLealtadRequeridoId: datos.nivel_lealtad_requerido_id }),
-        ...(datos.activo !== undefined && { activo: datos.activo }),
-        ...(datos.imagen_url !== undefined && { imagenUrl: datos.imagen_url }),
-        ...(datos.categoria && { categoria: datos.categoria }),
-        ...(datos.tipo && { tipo: datos.tipo }),
-        ...(datos.stock_disponible !== undefined && { stockDisponible: datos.stock_disponible }),
-        ...(datos.stock_ilimitado !== undefined && { stockIlimitado: datos.stock_ilimitado }),
-        ...(datos.nivel_minimo !== undefined && { nivelMinimo: datos.nivel_minimo }),
-        ...(datos.valido_desde !== undefined && { validoDesde: datos.valido_desde }),
-        ...(datos.valido_hasta !== undefined && { validoHasta: datos.valido_hasta }),
-        ...(datos.condiciones !== undefined && { condiciones: datos.condiciones }),
-        ...(datos.beneficios !== undefined && { beneficios: datos.beneficios }),
-        ...(datos.restricciones !== undefined && { restricciones: datos.restricciones }),
-        ...(datos.tags !== undefined && { tags: datos.tags }),
-        ...(datos.valor_estimado !== undefined && { valorEstimado: datos.valor_estimado })
+        ...(datos.activo !== undefined && { activo: datos.activo })
       }
     });
     

@@ -100,7 +100,7 @@ export async function ejecutarConsulta<T extends RowDataPacket>(
   sql: string,
   parametros: any[] = []
 ): Promise<T[]> {
-  let conexion: mysql.Connection | null = null;
+  let conexion: mysql.PoolConnection | null = null;
   
   try {
     // Validar que la consulta no esté vacía
@@ -158,7 +158,7 @@ export async function ejecutarModificacion(
   sql: string,
   parametros: any[] = []
 ): Promise<ResultSetHeader> {
-  let conexion: mysql.Connection | null = null;
+  let conexion: mysql.PoolConnection | null = null;
   
   try {
     // Validar que la consulta no esté vacía
@@ -239,9 +239,9 @@ export async function ejecutarActualizacion(
  * ```
  */
 export async function ejecutarTransaccion<T>(
-  callback: (conexion: mysql.Connection) => Promise<T>
+  callback: (conexion: mysql.PoolConnection) => Promise<T>
 ): Promise<T> {
-  let conexion: mysql.Connection | null = null;
+  let conexion: mysql.PoolConnection | null = null;
   
   try {
     conexion = await obtenerConexion();

@@ -120,13 +120,13 @@ export async function actualizarPuntosUsuario(usuarioId: number, puntos: number)
 }
 
 // Funciones de Sesiones
-export async function crearSesion(datos: Omit<Sesion, 'id' | 'creada_en'>): Promise<boolean> {
+export async function crearSesion(datos: Omit<Sesion, 'creada_en'>): Promise<boolean> {
   const sql = `
     INSERT INTO sesiones (id, usuario_id, expira_en, creada_en)
     VALUES (?, ?, ?, NOW())
   `;
   
-  const params = [datos.id, datos.usuario_id, datos.expira_en];
+  const params = [datos.id!, datos.usuario_id, datos.expira_en];
 
   try {
     await query(sql, params);
@@ -218,9 +218,9 @@ export async function obtenerEstadisticasUsuario(usuarioId: number) {
       puntos_para_siguiente: siguienteNivel 
         ? Math.max(0, siguienteNivel.puntos_requeridos - usuario.puntos)
         : 0,
-      progreso_actual: nivelActual
+      progreso_actual: nivelActual && siguienteNivel
         ? Math.min(100, ((usuario.puntos - (niveles[nivelActual.orden - 2]?.puntos_requeridos || 0)) / 
-           (siguienteNivel?.puntos_requeridos - (niveles[nivelActual.orden - 2]?.puntos_requeridos || 0))) * 100)
+           (siguienteNivel.puntos_requeridos - (niveles[nivelActual.orden - 2]?.puntos_requeridos || 0))) * 100)
         : 100
     };
   } catch (error) {

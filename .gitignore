@@ -66,3 +66,11 @@ generate-*.bat
 start-dev-server.bat
 init.js
 start.js
+
+# Legacy/incompatible files (SQLite, MySQL direct)
+lib/
+src/lib/db.ts
+src/lib/db-mysql.ts
+src/lib/db-direct.ts
+src/lib/mysql-connection.ts
+src/lib/*.js

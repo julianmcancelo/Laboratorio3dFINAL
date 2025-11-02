@@ -7,14 +7,14 @@
 
 const mysql = require('mysql2/promise');
 
-// Configuración de conexión
+// Configuración de conexión - USAR VARIABLES DE ENTORNO
 const dbConfig = {
-  host: '167.250.5.55',
-  user: 'jcancelo_3d',
-  password: 'feelthesky1',
-  database: 'jcancelo_laboratorio3d',
-  port: 3306,
-  ssl: false
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'laboratorio3d',
+  port: parseInt(process.env.DB_PORT || '3306', 10),
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
 };
 
 // Pool de conexiones

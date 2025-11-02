@@ -1,13 +1,13 @@
 import mysql from 'mysql2/promise';
 
-// Configuración de conexión a MySQL
+// Configuración de conexión a MySQL - USAR SOLO VARIABLES DE ENTORNO
 const dbConfig = {
-  host: process.env.DB_HOST || '167.250.5.55',
-  user: process.env.DB_USER || 'jcancelo_3d',
-  password: process.env.DB_PASS || 'feelthesky1',
-  database: process.env.DB_NAME || 'jcancelo_laboratorio3d',
-  port: parseInt(process.env.DB_PORT || '3306'),
-  ssl: false, // Desactivar SSL para este servidor
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'laboratorio3d',
+  port: parseInt(process.env.DB_PORT || '3306', 10),
+  ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : undefined,
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0
@@ -37,7 +37,7 @@ export async function query(sql: string, params?: any[]): Promise<any> {
 }
 
 // Función para obtener una conexión
-export async function getConnection(): Promise<mysql.Connection> {
+export async function getConnection(): Promise<mysql.PoolConnection> {
   const pool = getPool();
   return await pool.getConnection();
 }

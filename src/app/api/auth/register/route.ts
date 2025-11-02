@@ -40,7 +40,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       email,
       password,
       password_confirmation,
-      telefono,
       instagram,
       codigo_referido,
       acepta_terminos,
@@ -103,7 +102,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       password_hash: passwordHash, // También guardar en password_hash para compatibilidad
       rol: 'CLIENTE', // Usar valor del enum mapeado
       puntos_acumulados: 500, // 🎁 Bono de bienvenida según documento
-      telefono: telefono?.trim() || null,
       instagram: instagram?.trim() || null,
       codigo_referido: codigoReferido,
       referido_por_id: undefined, // TODO: Implementar lógica de referidos si es necesario

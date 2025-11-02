@@ -26,6 +26,7 @@ export interface Usuario {
   apto_para_canje: boolean;
   nivel_lealtad_id?: number;
   nivel?: string; // Nombre del nivel de lealtad
+  activo?: boolean; // Campo para activar/desactivar usuario
   created_at?: Date;
   updated_at?: Date;
 }
@@ -137,6 +138,41 @@ export async function crearUsuario(datos: Omit<Usuario, 'id' | 'created_at' | 'u
   }
 }
 
+export async function actualizarUsuario(
+  usuarioId: number, 
+  datos: Partial<Omit<Usuario, 'id' | 'created_at' | 'updated_at'>>
+): Promise<boolean> {
+  try {
+    // Mapear nombres de campos de la interfaz a los nombres de Prisma
+    const datosActualizacion: any = {};
+    
+    if (datos.nombre_completo !== undefined) datosActualizacion.nombreCompleto = datos.nombre_completo;
+    if (datos.email !== undefined) datosActualizacion.email = datos.email;
+    if (datos.password !== undefined) datosActualizacion.password = datos.password;
+    if (datos.password_hash !== undefined) datosActualizacion.passwordHash = datos.password_hash;
+    if (datos.dni !== undefined) datosActualizacion.dni = datos.dni;
+    if (datos.instagram !== undefined) datosActualizacion.instagram = datos.instagram;
+    if (datos.rol !== undefined) datosActualizacion.rol = datos.rol;
+    if (datos.puntos_acumulados !== undefined) datosActualizacion.puntosAcumulados = datos.puntos_acumulados;
+    if (datos.codigo_referido !== undefined) datosActualizacion.codigoReferido = datos.codigo_referido;
+    if (datos.referido_por_id !== undefined) datosActualizacion.referidoPorId = datos.referido_por_id;
+    if (datos.apto_para_canje !== undefined) datosActualizacion.aptoParaCanje = datos.apto_para_canje;
+    if (datos.nivel_lealtad_id !== undefined) datosActualizacion.nivelLealtadId = datos.nivel_lealtad_id;
+    if (datos.activo !== undefined) datosActualizacion.activo = datos.activo;
+
+    await prisma.usuario.update({
+      where: { id: usuarioId },
+      data: datosActualizacion
+    });
+    
+    console.log(`✅ Usuario ${usuarioId} actualizado exitosamente`);
+    return true;
+  } catch (error) {
+    console.error('❌ Error actualizando usuario:', error);
+    throw error;
+  }
+}
+
 export async function actualizarPuntosUsuario(usuarioId: number, puntos: number): Promise<string> {
   try {
     // Determinar nivel según puntos
@@ -195,7 +231,7 @@ export async function obtenerSesion(sesionId: string): Promise<Sesion | null> {
       id: sesion.id,
       usuario_id: sesion.usuarioId,
       expira_en: sesion.expiraEn,
-      creada_en: sesion.creadaEn
+      creada_en: sesion.creadaEn ?? undefined
     };
   } catch (error) {
     console.error('❌ Error obteniendo sesión:', error);
@@ -324,9 +360,9 @@ export async function obtenerEstadisticasUsuario(usuarioId: number) {
       puntos_para_siguiente: siguienteNivel 
         ? Math.max(0, siguienteNivel.puntos_requeridos - usuario.puntosAcumulados)
         : 0,
-      progreso_actual: nivelActual
+      progreso_actual: nivelActual && siguienteNivel
         ? Math.min(100, ((usuario.puntosAcumulados - (niveles[nivelActual.orden - 2]?.puntos_requeridos || 0)) / 
-           (siguienteNivel?.puntos_requeridos - (niveles[nivelActual.orden - 2]?.puntos_requeridos || 0))) * 100)
+           (siguienteNivel.puntos_requeridos - (niveles[nivelActual.orden - 2]?.puntos_requeridos || 0))) * 100)
         : 100,
       total_compras: totalCompras,
       puntos_gastados_totales: puntosGastadosTotales
