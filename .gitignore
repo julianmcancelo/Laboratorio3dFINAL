@@ -69,6 +69,7 @@ start.js
 
 # Legacy/incompatible files (SQLite, MySQL direct)
 lib/
+scripts/
 src/lib/db.ts
 src/lib/db-mysql.ts
 src/lib/db-direct.ts
