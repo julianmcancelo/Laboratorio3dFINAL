@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id               Int            @id @default(autoincrement())
+  nombreCompleto   String         @map("nombre_completo") @db.VarChar(100)
+  dni              String?        @unique(map: "dni") @map("dni") @db.VarChar(20)
+  instagram        String?        @map("instagram") @db.VarChar(100)
+  email            String         @unique(map: "email") @map("email") @db.VarChar(100)
+  password         String?        @map("password") @db.VarChar(255)
+  passwordHash     String         @map("password_hash") @db.VarChar(255)
+  rol              Rol            @map("rol")
+  puntosAcumulados Int            @default(0) @map("puntos_acumulados")
+  codigoReferido   String?        @unique(map: "codigo_referido") @map("codigo_referido") @db.VarChar(20)
+  referidoPorId    Int?           @map("referido_por_id")
+  aptoParaCanje    Boolean        @default(false) @map("apto_para_canje")
+  nivelLealtadId   Int?           @map("nivel_lealtad_id")
+  createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt        DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
+  canjes_premios   CanjesPremio[]
+  compras          Compra[]
+  nivelLealtad     NivelLealtad?  @relation(fields: [nivelLealtadId], references: [id], onUpdate: Restrict, map: "fk_usuario_nivel_lealtad")
+
+  @@index([nivelLealtadId], map: "fk_usuario_nivel_lealtad")
+  @@map("usuarios")
+}
+
+model Sesion {
+  id        String    @id @db.VarChar(255)
+  usuarioId Int       @map("usuario_id")
+  expiraEn  DateTime  @map("expira_en") @db.Timestamp(0)
+  creadaEn  DateTime? @default(now()) @map("creada_en") @db.Timestamp(0)
+
+  @@index([expiraEn], map: "idx_expira_en")
+  @@index([usuarioId], map: "idx_usuario_id")
+  @@map("sesiones")
+}
+
+model TokenRecuperacion {
+  id        String    @id @db.VarChar(255)
+  usuarioId Int       @map("usuario_id")
+  token     String    @unique(map: "token") @db.VarChar(255)
+  expiraEn  DateTime  @map("expira_en") @db.Timestamp(0)
+  usado     Boolean?  @default(false)
+  creado_en DateTime? @default(now()) @db.Timestamp(0)
+
+  @@index([expiraEn], map: "idx_expira_en")
+  @@index([token], map: "idx_token")
+  @@index([usuarioId], map: "idx_usuario_id")
+  @@map("tokens_recuperacion")
+}
+
+model Cliente {
+  id               Int       @id @default(autoincrement())
+  nombre           String    @db.VarChar(100)
+  dni              String    @unique(map: "dni") @db.VarChar(20)
+  instagram        String?   @db.VarChar(100)
+  fechaRegistro    DateTime? @default(now()) @map("fecha_registro") @db.DateTime(0)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamp(0)
+  puntosAcumulados Int       @default(0) @map("puntos_acumulados")
+  aptoParaCanje    Boolean   @default(false) @map("apto_para_canje")
+  codigoReferido   String?   @unique(map: "codigo_referido") @map("codigo_referido") @db.VarChar(20)
+  referidoPorId    Int?      @map("referido_por_id")
+
+  @@map("clientes")
+}
+
+model Premio {
+  id                      Int            @id @default(autoincrement())
+  nombre                  String         @db.VarChar(255)
+  descripcion             String?        @db.Text
+  puntosRequeridos        Int            @default(0) @map("puntos_requeridos")
+  nivelLealtadRequeridoId Int?           @map("nivel_lealtad_requerido_id")
+  activo                  Boolean?       @default(true)
+  canjesPremios           CanjesPremio[]
+  nivelLealtadRequerido   NivelLealtad?  @relation("PremioNivel", fields: [nivelLealtadRequeridoId], references: [id], onUpdate: Restrict, map: "fk_premio_nivel_lealtad")
+
+  @@index([nivelLealtadRequeridoId], map: "fk_premio_nivel_lealtad")
+  @@map("premios")
+}
+
+model CanjesPremio {
+  id              Int      @id @default(autoincrement())
+  clienteId       Int      @map("cliente_id")
+  premioId        Int      @map("premio_id")
+  puntosCanjeados Int      @map("puntos_canjeados")
+  fechaCanje      DateTime @default(now()) @map("fecha_canje") @db.Timestamp(0)
+  vistoPorAdmin   Boolean  @default(false) @map("visto_por_admin")
+  estadoEntrega   String   @default("Pendiente") @map("estado_entrega") @db.VarChar(50)
+  premio          Premio   @relation(fields: [premioId], references: [id], onUpdate: Restrict, map: "canjes_premios_ibfk_2")
+  usuarios        Usuario  @relation(fields: [clienteId], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_canjes_premios_usuario")
+
+  @@index([clienteId], map: "cliente_id")
+  @@index([premioId], map: "premio_id")
+  @@map("canjes_premios")
+}
+
+model Compra {
+  id             Int         @id @default(autoincrement())
+  clienteId      Int         @map("cliente_id")
+  monto          Decimal     @map("monto") @db.Decimal(10, 2)
+  descripcion    String?     @db.Text
+  fechaCompra    DateTime?   @default(now()) @map("fecha_compra") @db.DateTime(0)
+  verificado     Boolean?    @default(false)
+  createdAt      DateTime    @default(now()) @map("created_at") @db.Timestamp(0)
+  comprobanteUrl String?     @map("comprobante_url") @db.VarChar(255)
+  metodoPagoId   Int?        @map("metodo_pago_id")
+  usuarios       Usuario     @relation(fields: [clienteId], references: [id], onDelete: Cascade, onUpdate: Restrict, map: "fk_compras_usuario")
+  metodoPago     MetodoPago? @relation(fields: [metodoPagoId], references: [id], onDelete: Restrict, onUpdate: Restrict, map: "fk_metodo_pago")
+
+  @@index([clienteId], map: "cliente_id")
+  @@index([metodoPagoId], map: "fk_metodo_pago")
+  @@map("compras")
+}
+
+model HistorialPunto {
+  id                  Int      @id @default(autoincrement())
+  usuarioId           Int      @map("usuario_id")
+  tipoTransaccion     String   @map("tipo_transaccion") @db.VarChar(50)
+  puntosMovimiento    Int      @map("puntos_movimiento")
+  descripcionDetalle  String?  @map("descripcion_detalle") @db.VarChar(255)
+  premioId            Int?     @map("premio_id")
+  compraId            Int?     @map("compra_id")
+  canjeId             Int?     @map("canje_id")
+  referidoQueGeneroId Int?     @map("referido_que_genero_id")
+  fechaTransaccion    DateTime @default(now()) @map("fecha_transaccion") @db.Timestamp(0)
+
+  @@index([canjeId], map: "canje_id")
+  @@index([compraId], map: "compra_id")
+  @@index([premioId], map: "fk_historial_puntos_premio")
+  @@index([referidoQueGeneroId], map: "referido_que_genero_id")
+  @@index([usuarioId], map: "usuario_id")
+  @@map("historial_puntos")
+}
+
+model NivelLealtad {
+  id                      Int       @id @default(autoincrement())
+  nombreNivel             String    @unique(map: "nombre_nivel") @map("nombre_nivel") @db.VarChar(50)
+  iconoNivel              String?   @map("icono_nivel") @db.VarChar(100)
+  puntosMinimosRequeridos Int       @default(0) @map("puntos_minimos_requeridos")
+  multiplicadorPuntos     Decimal   @default(1.00) @map("multiplicador_puntos") @db.Decimal(3, 2)
+  descripcion             String?   @db.Text
+  orden                   Int?      @default(0)
+  activo                  Boolean?  @default(true)
+  createdAt               DateTime  @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt               DateTime  @default(now()) @map("updated_at") @db.Timestamp(0)
+  premioRequerido         Premio[]  @relation("PremioNivel")
+  usuarios                Usuario[]
+
+  @@map("niveles_lealtad")
+}
+
+model MetodoPago {
+  id      Int      @id @default(autoincrement())
+  nombre  String   @db.VarChar(100)
+  activo  Boolean? @default(true)
+  compras Compra[]
+
+  @@map("metodos_pago")
+}
+
+model ConfiguracionReferido {
+  id                         Int      @id @default(autoincrement())
+  porcentajeComisionReferido Decimal  @default(0.00) @map("porcentaje_comision_referido") @db.Decimal(5, 2)
+  puntosFijosPrimeraCompra   Int      @default(0) @map("puntos_fijos_primera_compra")
+  sistemaComisionActivo      Boolean  @default(true) @map("sistema_comision_activo")
+  fechaModificacion          DateTime @default(now()) @map("fecha_modificacion") @db.Timestamp(0)
+
+  @@map("configuracion_referidos")
+}
+
+model ConfiguracionSitio {
+  id         Int    @id @default(1)
+  temaActivo String @default("nexus-dark") @map("tema_activo") @db.VarChar(50)
+
+  @@map("configuracion_sitio")
+}
+
+enum Rol {
+  CLIENTE @map("cliente")
+  ADMIN   @map("admin")
+}

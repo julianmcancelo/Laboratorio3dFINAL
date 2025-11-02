@@ -1,0 +1,291 @@
+/* === NEXUS THEME CSS + DASHBOARD ANIMATIONS === */
+
+/* Fuentes - Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700;900&display=swap');
+
+/* === VARIABLES CSS PARA TEMAS === */
+:root { 
+    /* MODO OSCURO (POR DEFECTO) */
+    --main-bg: #0c0a09;
+    --main-text: #e7e5e4;
+    --muted-text: #a8a29e;
+    --heading-text: #ffffff;
+    --light-text-on-dark: #e7e5e4;
+    --dark-text-on-light: #1f2937;
+
+    --card-bg: rgba(20, 18, 17, 0.75);
+    --card-border: rgba(255, 255, 255, 0.1);
+    --card-light-bg: rgba(30, 28, 27, 0.6);
+    
+    --input-bg: rgba(255, 255, 255, 0.05);
+    --input-border: rgba(255,255,255,0.1);
+    --input-text: #e7e5e4;
+    --input-placeholder: #78716c;
+    
+    --focus-ring-admin: #8b5cf6;
+    --focus-shadow-admin: rgba(139, 92, 246, 0.3);
+    --focus-ring-client: #84cc16;
+    --focus-shadow-client: rgba(132, 204, 22, 0.3);
+    --focus-ring-general: #f59e0b;
+    --focus-shadow-general: rgba(245, 158, 11, 0.3);
+
+    --aurora-1-color: #3b82f6;
+    --aurora-2-color: #10b981;
+    --aurora-opacity: 0.15;
+
+    /* Colores de Acento */
+    --accent-blue: #3b82f6;
+    --accent-green: #10b981;
+    --accent-purple: #8b5cf6;
+    --accent-amber: #f59e0b;
+    --accent-lime: #84cc16;
+    --accent-red: #ef4444;
+    --accent-yellow: #eab308;
+    --accent-orange: #f97316;
+    --accent-teal: #14b8a6;
+    --accent-rose: #f43f5e;
+}
+
+html.light-mode { 
+    /* MODO CLARO */
+    --main-bg: #f3f4f6;
+    --main-text: #1f2937;
+    --muted-text: #4b5563;
+    --heading-text: #111827;
+    
+    --card-bg: rgba(255, 255, 255, 0.75);
+    --card-border: rgba(0, 0, 0, 0.08);
+    --card-light-bg: rgba(249, 250, 251, 0.6);
+
+    --input-bg: rgba(0, 0, 0, 0.03);
+    --input-border: rgba(0,0,0,0.1);
+    --input-text: #1f2937;
+    --input-placeholder: #9ca3af;
+
+    --focus-ring-admin: #7c3aed;
+    --focus-shadow-admin: rgba(124, 58, 237, 0.3);
+    --focus-ring-client: #65a30d;
+    --focus-shadow-client: rgba(101, 163, 13, 0.3);
+    --focus-ring-general: #d97706;
+    --focus-shadow-general: rgba(217, 119, 6, 0.3);
+    
+    --aurora-1-color: #a78bfa;
+    --aurora-2-color: #6ee7b7;
+    --aurora-opacity: 0.2;
+
+    --accent-blue: #2563eb;
+    --accent-green: #059669;
+    --accent-purple: #7c3aed;
+    --accent-amber: #d97706;
+    --accent-lime: #65a30d;
+    --accent-red: #dc2626;
+    --accent-yellow: #ca8a04;
+    --accent-orange: #ea580c;
+    --accent-teal: #0d9488;
+    --accent-rose: #e11d48;
+}
+
+/* === ESTILOS BASE === */
+body { 
+    font-family: 'Montserrat', sans-serif; 
+    background-color: var(--main-bg); 
+    color: var(--main-text); 
+    overflow-x: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* === GLASSMORPHISM === */
+.glassmorphism { 
+    background: var(--card-bg); 
+    backdrop-filter: blur(15px); 
+    -webkit-backdrop-filter: blur(15px); 
+    border: 1px solid var(--card-border); 
+    transition: background 0.3s ease, border 0.3s ease;
+}
+
+.glassmorphism-light {
+    background: var(--card-light-bg); 
+    backdrop-filter: blur(12px); 
+    -webkit-backdrop-filter: blur(12px); 
+    border: 1px solid var(--card-border);
+    transition: background 0.3s ease, border 0.3s ease;
+}
+
+/* === ANIMACIONES === */
+@keyframes fadeIn { 
+    from { opacity: 0; transform: translateY(10px) scale(0.98); } 
+    to { opacity: 1; transform: translateY(0) scale(1); } 
+}
+
+.fade-in-item { 
+    opacity: 0; 
+    animation: fadeIn 0.5s ease-out forwards; 
+}
+
+@keyframes pulse { 
+    0%, 100% { transform: translate(-50%, -50%) scale(0.85); } 
+    50% { transform: translate(-50%, -50%) scale(1.15); } 
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+@keyframes pointsPulse {
+  0%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.8;
+  }
+}
+
+@keyframes referralGlow {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.7; }
+}
+
+/* === PRIZE CARD EFFECTS === */
+.prize-card {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.prize-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.6s ease;
+}
+
+.prize-card:hover::before {
+  left: 100%;
+}
+
+.prize-card:hover {
+  transform: translateY(-6px) scale(1.03);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+}
+
+/* === PROGRESS CARD EFFECTS === */
+.progress-card {
+  background: linear-gradient(135deg, var(--card-light-bg), color-mix(in srgb, var(--card-light-bg) 95%, var(--main-text) 3%));
+  border-top: 4px solid;
+  /* El color del borde se define dinámicamente en el componente según el nivel del usuario */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.progress-card:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.15), 0 0 20px rgba(139, 92, 246, 0.2);
+}
+
+/* === HISTORY TABLE EFFECTS === */
+.history-table tr:hover {
+  background: linear-gradient(90deg, rgba(139, 92, 246, 0.08), rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.08));
+  transform: translateX(4px);
+  transition: all 0.3s ease;
+}
+
+/* === TABLE NEXUS === */
+.table-nexus { 
+    width: 100%; 
+    margin-top: 1rem; 
+    border-collapse: collapse; 
+}
+
+.table-nexus th, .table-nexus td { 
+    padding: 0.75rem 1rem; 
+    text-align: left; 
+    border-bottom: 1px solid var(--card-border); 
+}
+
+.table-nexus th { 
+    background-color: rgba(255,255,255,0.05);
+    font-weight: 600; 
+    text-transform: uppercase; 
+    font-size: 0.75rem; 
+    letter-spacing: 0.05em;
+    color: var(--main-text);
+}
+
+html.light-mode .table-nexus th {
+    background-color: rgba(0,0,0,0.03);
+}
+
+.table-nexus tbody tr:hover { 
+    background-color: rgba(255,255,255,0.03); 
+}
+
+html.light-mode .table-nexus tbody tr:hover { 
+    background-color: rgba(0,0,0,0.02); 
+}
+
+/* === BOTONES NEXUS === */
+.btn-nexus {
+    transition: all 0.3s ease;
+    transform-style: preserve-3d;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.btn-nexus:hover {
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+
+/* === INPUTS NEXUS === */
+.label-nexus {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--muted-text);
+    margin-bottom: 0.25rem;
+}
+
+.input-nexus {
+    display: block;
+    width: 100%;
+    border-radius: 0.375rem;
+    background-color: var(--input-bg);
+    color: var(--main-text);
+    padding: 0.625rem 0.75rem;
+    border: 1px solid var(--input-border);
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.3s ease, color 0.3s ease;
+}
+
+.input-nexus:focus {
+    outline: none;
+    border-color: var(--focus-ring-general);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+/* === TABLAS COMPACTAS === */
+.table-nexus {
+    font-size: 0.8rem !important;
+}
+
+.table-nexus th {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.75rem !important;
+}
+
+.table-nexus td {
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.8rem !important;
+}
+
+.history-table {
+    max-height: 300px;
+    overflow-y: auto;
+}
