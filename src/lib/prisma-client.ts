@@ -3,7 +3,7 @@
  * Adaptado a la estructura EXACTA de la base de datos existente
  */
 
-import { PrismaClient, Rol } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 
 // Crear instancia de Prisma Client
 const prisma = new PrismaClient({
