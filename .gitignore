@@ -75,3 +75,5 @@ src/lib/db-mysql.ts
 src/lib/db-direct.ts
 src/lib/mysql-connection.ts
 src/lib/*.js
+**/*-mysql.ts
+**/*-sqlite.ts
