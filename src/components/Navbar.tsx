@@ -26,11 +26,7 @@ interface NivelLealtad {
 export default function Navbar() {
   const pathname = usePathname();
   
-  // No mostrar navbar en páginas específicas
-  if (pathname === '/bloqueado' || pathname === '/login' || pathname === '/registro' || pathname === '/forgot-password' || pathname?.startsWith('/reset-password')) {
-    return null;
-  }
-  
+  // Hooks deben ir ANTES de cualquier return
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [loading, setLoading] = useState(true);
   const [menuAbierto, setMenuAbierto] = useState(false);
@@ -175,8 +171,8 @@ export default function Navbar() {
   }, [menuAbierto]);
 
   // Rutas donde NO se debe mostrar el navbar
-  const rutasOcultas = ['/login', '/registro', '/recuperar', '/dashboard', '/admin'];
-  const ocultarNavbar = rutasOcultas.some(ruta => pathname.startsWith(ruta));
+  const rutasOcultas = ['/login', '/registro', '/recuperar', '/dashboard', '/admin', '/bloqueado'];
+  const ocultarNavbar = rutasOcultas.some(ruta => pathname.startsWith(ruta)) || pathname?.startsWith('/reset-password') || pathname === '/forgot-password';
 
   // Si el navbar debe estar oculto, no renderizar nada
   if (ocultarNavbar) {
