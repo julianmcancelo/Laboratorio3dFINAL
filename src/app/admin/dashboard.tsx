@@ -24,24 +24,6 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [modalConfig, setModalConfig] = useState(false);
   
-  // Cargar hojas de estilo del tema
-  useEffect(() => {
-    const linkNexus = document.createElement('link');
-    linkNexus.rel = 'stylesheet';
-    linkNexus.href = '/css/nexus-theme.css';
-    document.head.appendChild(linkNexus);
-
-    const linkLab = document.createElement('link');
-    linkLab.rel = 'stylesheet';
-    linkLab.href = '/css/laboratorio-theme.css';
-    document.head.appendChild(linkLab);
-
-    return () => {
-      document.head.removeChild(linkNexus);
-      document.head.removeChild(linkLab);
-    };
-  }, []);
-  
   const fechaActual = new Date().toLocaleDateString('es-AR', { 
     weekday: 'long', 
     day: '2-digit',

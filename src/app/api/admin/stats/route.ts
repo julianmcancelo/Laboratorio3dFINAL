@@ -17,7 +17,7 @@ export async function GET() {
     // Total usuarios
     const [usuarios]: any = await connection.execute(
       'SELECT COUNT(*) as total FROM usuarios WHERE rol = ?',
-      ['USER']
+      ['cliente']
     );
 
     // Comprobantes pendientes

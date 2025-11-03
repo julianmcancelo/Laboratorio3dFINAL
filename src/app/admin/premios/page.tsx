@@ -11,7 +11,7 @@ interface Premio {
   puntos_requeridos: number;
   imagen_base64?: string | null;
   tipo_imagen?: string | null;
-  stock: number;
+  stock?: number;
   activo: boolean;
 }
 
@@ -91,13 +91,13 @@ export default function GestionarPremios() {
     if (premio) {
       setPremioEdit(premio);
       setFormData({
-        nombre: premio.nombre,
-        descripcion: premio.descripcion,
-        puntos_requeridos: premio.puntos_requeridos.toString(),
-        stock: premio.stock.toString(),
+        nombre: premio.nombre || '',
+        descripcion: premio.descripcion || '',
+        puntos_requeridos: premio.puntos_requeridos !== undefined ? premio.puntos_requeridos.toString() : '0',
+        stock: premio.stock !== undefined ? premio.stock.toString() : '0',
         imagen_base64: (premio as any).imagen_base64 || '',
         tipo_imagen: (premio as any).tipo_imagen || '',
-        activo: premio.activo
+        activo: premio.activo !== undefined ? premio.activo : true
       });
     } else {
       setPremioEdit(null);
@@ -293,7 +293,7 @@ export default function GestionarPremios() {
           </div>
           <div className="bg-gradient-to-br from-amber-600 to-orange-600 rounded-xl p-6">
             <p className="text-amber-200 text-sm mb-1">Stock Total</p>
-            <p className="text-3xl font-bold">{premios.reduce((acc, p) => acc + p.stock, 0)}</p>
+            <p className="text-3xl font-bold">{premios.reduce((acc, p) => acc + (p.stock || 0), 0)}</p>
           </div>
         </div>
       </div>
@@ -348,8 +348,8 @@ export default function GestionarPremios() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Stock:</span>
-                      <span className={`font-bold ${premio.stock > 0 ? 'text-white' : 'text-red-400'}`}>
-                        {premio.stock} unidades
+                      <span className={`font-bold ${(premio.stock || 0) > 0 ? 'text-white' : 'text-red-400'}`}>
+                        {premio.stock !== undefined ? premio.stock : 0} unidades
                       </span>
                     </div>
                   </div>
