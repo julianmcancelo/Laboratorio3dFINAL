@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 // Store inline para evitar problemas de importación
@@ -59,11 +59,21 @@ function useAuthStore(): AuthState {
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { login } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
+
+  useEffect(() => {
+    if (searchParams.get('admin') === 'created') {
+      setSuccessMessage('¡Administrador creado exitosamente! Ahora puedes iniciar sesión.');
+      // Limpiar URL
+      router.replace('/login');
+    }
+  }, [searchParams, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,6 +124,13 @@ export default function LoginPage() {
               Accede a tu cuenta premium y disfruta tus beneficios
             </p>
           </div>
+
+          {/* Mensaje de éxito */}
+          {successMessage && (
+            <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+              <p className="text-green-400 text-sm text-center">{successMessage}</p>
+            </div>
+          )}
 
           {/* Mensaje de error */}
           {error && (

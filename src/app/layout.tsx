@@ -17,6 +17,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import Navbar from '@/components/Navbar';
+import SetupChecker from '@/components/SetupChecker';
 
 // ============================================================================
 // 🔧 CONFIGURACIÓN DE FUENTES
@@ -203,7 +204,9 @@ export default function RootLayout({
           
           {/* Contenido de la página */}
           <main className="relative">
-            {children}
+            <SetupChecker>
+              {children}
+            </SetupChecker>
           </main>
           
           {/* Portal para notificaciones y toasts */}
