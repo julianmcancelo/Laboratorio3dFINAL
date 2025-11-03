@@ -43,6 +43,7 @@ export default function GestionUsuariosPage() {
   const [mostrarModalRechazar, setMostrarModalRechazar] = useState(false);
   const [motivoRechazo, setMotivoRechazo] = useState('');
   const [procesando, setProcesando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Verificar admin y cargar datos
   useEffect(() => {
@@ -51,9 +52,13 @@ export default function GestionUsuariosPage() {
 
   const verificarAdminYcargarDatos = async () => {
     try {
+      setError(null);
+      setLoading(true);
+      
       const sessionId = localStorage.getItem('session_id');
       if (!sessionId) {
-        router.push('/login');
+        setError('No hay sesión activa');
+        setTimeout(() => router.push('/login'), 2000);
         return;
       }
 
@@ -65,13 +70,21 @@ export default function GestionUsuariosPage() {
       });
 
       if (!verifyResponse.ok) {
-        router.push('/login');
+        setError('Sesión inválida o expirada');
+        setTimeout(() => router.push('/login'), 2000);
         return;
       }
 
       const userData = await verifyResponse.json();
+      if (!userData.usuario) {
+        setError('No se pudo cargar la información del usuario');
+        setTimeout(() => router.push('/login'), 2000);
+        return;
+      }
+
       if (userData.usuario.rol !== 'ADMIN') {
-        router.push('/dashboard');
+        setError('Acceso denegado: Solo administradores');
+        setTimeout(() => router.push('/dashboard'), 2000);
         return;
       }
 
@@ -81,7 +94,8 @@ export default function GestionUsuariosPage() {
       await cargarUsuarios();
     } catch (error) {
       console.error('Error:', error);
-      router.push('/login');
+      setError('Error de conexión. Intenta nuevamente.');
+      setLoading(false);
     }
   };
 
@@ -225,6 +239,26 @@ export default function GestionUsuariosPage() {
     }
   };
 
+  // Error
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-8">
+          <div className="bg-red-900/50 border-2 border-red-500 rounded-xl p-8 mb-6">
+            <div className="text-red-400 text-6xl mb-4">⚠️</div>
+            <p className="text-blue-400 text-xl font-semibold">{error}</p>
+          </div>
+          <button
+            onClick={() => router.push('/login')}
+            className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-lg transition-colors"
+          >
+            Ir al login
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // Loading
   if (loading) {
     return (
@@ -251,7 +285,7 @@ export default function GestionUsuariosPage() {
             </p>
           </div>
           <Link 
-            href="/admin/dashboard" 
+            href="/admin" 
             className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
