@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface CargarComprobanteProps {
   usuarioId: number;
@@ -18,6 +18,49 @@ export default function CargarComprobante({ usuarioId, onComprobanteSubido, onCl
   const [preview, setPreview] = useState<string>('');
   const [cargando, setCargando] = useState(false);
   const [mensaje, setMensaje] = useState<{ tipo: 'success' | 'error', texto: string } | null>(null);
+  const [verificandoPendientes, setVerificandoPendientes] = useState(true);
+  const [tienePendientes, setTienePendientes] = useState(false);
+  const [comprobantesPendientes, setComprobantesPendientes] = useState<any[]>([]);
+
+  // Verificar si tiene comprobantes pendientes al cargar
+  useEffect(() => {
+    verificarComprobantesPendientes();
+  }, [usuarioId]);
+
+  const verificarComprobantesPendientes = async () => {
+    try {
+      setVerificandoPendientes(true);
+      const response = await fetch(`/api/comprobantes?usuario_id=${usuarioId}`);
+      
+      if (!response.ok) {
+        console.error('Error al verificar comprobantes pendientes');
+        setVerificandoPendientes(false);
+        return;
+      }
+
+      const data = await response.json();
+      const comprobantes = data.comprobantes || [];
+      
+      // Filtrar solo los comprobantes pendientes (no verificados)
+      const pendientes = comprobantes.filter((c: any) => 
+        c.estado === 'pendiente' || c.estado === 'en_revision'
+      );
+      
+      setComprobantesPendientes(pendientes);
+      setTienePendientes(pendientes.length > 0);
+      
+      if (pendientes.length > 0) {
+        setMensaje({
+          tipo: 'error',
+          texto: `Tienes ${pendientes.length} comprobante${pendientes.length > 1 ? 's' : ''} pendiente${pendientes.length > 1 ? 's' : ''} de verificación. Debes esperar a que ${pendientes.length > 1 ? 'sean revisados' : 'sea revisado'} antes de subir otro.`
+        });
+      }
+    } catch (error) {
+      console.error('Error al verificar comprobantes pendientes:', error);
+    } finally {
+      setVerificandoPendientes(false);
+    }
+  };
 
   const handleArchivoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -62,6 +105,15 @@ export default function CargarComprobante({ usuarioId, onComprobanteSubido, onCl
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Verificar si tiene comprobantes pendientes
+    if (tienePendientes) {
+      setMensaje({
+        tipo: 'error',
+        texto: 'No puedes subir un nuevo comprobante mientras tengas comprobantes pendientes de verificación.'
+      });
+      return;
+    }
 
     // Validaciones
     if (!archivo) {
@@ -143,6 +195,23 @@ export default function CargarComprobante({ usuarioId, onComprobanteSubido, onCl
     }
   };
 
+  // Si está verificando, mostrar loader
+  if (verificandoPendientes) {
+    return (
+      <div className="progress-card glassmorphism-light fade-in-item relative rounded-xl p-5 mb-4 shadow-lg" style={{animationDelay: '0.5s'}}>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <svg className="animate-spin w-12 h-12 mx-auto mb-4" style={{color: 'var(--accent-purple)'}} fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p className="text-sm" style={{color: 'var(--muted-text)'}}>Verificando comprobantes...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="progress-card glassmorphism-light fade-in-item relative rounded-xl p-5 mb-4 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden" style={{animationDelay: '0.5s'}}>
       <div className="flex items-center gap-3 mb-4 pb-4" style={{borderBottom: '1px solid var(--card-border)'}}>
@@ -156,6 +225,39 @@ export default function CargarComprobante({ usuarioId, onComprobanteSubido, onCl
           <p className="text-xs" style={{color: 'var(--muted-text)'}}>Sube tu comprobante de compra para ganar puntos</p>
         </div>
       </div>
+
+      {/* Alerta de comprobantes pendientes */}
+      {tienePendientes && (
+        <div className="mb-4 p-4 bg-amber-500/10 border-2 border-amber-500/30 rounded-xl">
+          <div className="flex items-start gap-3">
+            <svg className="w-6 h-6 flex-shrink-0 mt-0.5" style={{color: 'var(--accent-amber)'}} fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            <div className="flex-1">
+              <h4 className="font-semibold mb-1" style={{color: 'var(--accent-amber)'}}>Comprobantes Pendientes de Verificación</h4>
+              <p className="text-sm mb-3" style={{color: 'var(--muted-text)'}}>
+                No puedes subir nuevos comprobantes hasta que los siguientes sean revisados:
+              </p>
+              <ul className="space-y-2">
+                {comprobantesPendientes.map((comprobante, index) => (
+                  <li key={comprobante.id || index} className="text-sm flex items-center gap-2 p-2 rounded-lg" style={{backgroundColor: 'var(--input-bg)'}}>
+                    <span className="inline-block w-2 h-2 rounded-full bg-amber-500"></span>
+                    <span style={{color: 'var(--body-text)'}}>
+                      <strong>${comprobante.monto?.toLocaleString()}</strong> - {comprobante.descripcion?.substring(0, 50)}{comprobante.descripcion?.length > 50 ? '...' : ''}
+                    </span>
+                    <span className="ml-auto px-2 py-0.5 text-xs font-semibold rounded-full" style={{backgroundColor: 'var(--accent-amber)', color: 'white'}}>
+                      {comprobante.estado === 'en_revision' ? 'En Revisión' : 'Pendiente'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs mt-3" style={{color: 'var(--muted-text)'}}>
+                💡 El administrador revisará tu{comprobantesPendientes.length > 1 ? 's' : ''} comprobante{comprobantesPendientes.length > 1 ? 's' : ''} pronto. Te notificaremos cuando {comprobantesPendientes.length > 1 ? 'sean aprobados o rechazados' : 'sea aprobado o rechazado'}.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Monto */}
@@ -172,7 +274,7 @@ export default function CargarComprobante({ usuarioId, onComprobanteSubido, onCl
               className="input-nexus pl-8"
               placeholder="0.00"
               required
-              disabled={cargando}
+              disabled={cargando || tienePendientes}
             />
           </div>
           
@@ -213,7 +315,7 @@ export default function CargarComprobante({ usuarioId, onComprobanteSubido, onCl
             }}
             className="input-nexus"
             required
-            disabled={cargando}
+            disabled={cargando || tienePendientes}
           >
             <option value="otros">Otros</option>
             <option value="filamento">Filamento</option>
@@ -242,7 +344,7 @@ export default function CargarComprobante({ usuarioId, onComprobanteSubido, onCl
                 className="input-nexus"
                 placeholder="Ej: A1M0001234567"
                 required
-                disabled={cargando}
+                disabled={cargando || tienePendientes}
                 maxLength={100}
               />
               <p className="text-xs mt-1" style={{color: 'var(--muted-text)'}}>
@@ -258,7 +360,7 @@ export default function CargarComprobante({ usuarioId, onComprobanteSubido, onCl
                 onChange={(e) => setMarcaModelo(e.target.value)}
                 className="input-nexus"
                 placeholder="Ej: Bambu Lab A1 Mini"
-                disabled={cargando}
+                disabled={cargando || tienePendientes}
                 maxLength={200}
               />
             </div>
@@ -274,7 +376,7 @@ export default function CargarComprobante({ usuarioId, onComprobanteSubido, onCl
             className="input-nexus min-h-[80px] resize-none"
             placeholder="Ej: Compra de filamento PLA 1kg en tienda..."
             required
-            disabled={cargando}
+            disabled={cargando || tienePendientes}
             maxLength={500}
           />
           <p className="text-xs mt-1" style={{color: 'var(--muted-text)'}}>
@@ -292,7 +394,7 @@ export default function CargarComprobante({ usuarioId, onComprobanteSubido, onCl
               accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf"
               onChange={handleArchivoChange}
               className="hidden"
-              disabled={cargando}
+              disabled={cargando || tienePendientes}
             />
             <label
               htmlFor="archivo-comprobante"
@@ -368,7 +470,7 @@ export default function CargarComprobante({ usuarioId, onComprobanteSubido, onCl
         {/* Botón submit */}
         <button
           type="submit"
-          disabled={cargando || !archivo || !monto || !descripcion}
+          disabled={cargando || !archivo || !monto || !descripcion || tienePendientes}
           className="btn-nexus w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           style={{backgroundColor: 'var(--accent-purple)', color: 'white'}}
         >
