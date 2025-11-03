@@ -23,19 +23,39 @@ export async function POST(request: NextRequest) {
       where: { id: admin_id }
     });
 
-    if (!admin || admin.rol !== 'ADMIN') {
+    console.log('🔍 [VALIDAR] Admin encontrado:', admin ? { id: admin.id, email: admin.email, rol: admin.rol } : 'null');
+
+    if (!admin) {
+      console.log('❌ [VALIDAR] Admin no encontrado con ID:', admin_id);
       return NextResponse.json(
-        { error: 'No autorizado' },
+        { error: 'Administrador no encontrado' },
+        { status: 404 }
+      );
+    }
+
+    // Comparación case-insensitive del rol
+    const rolUpper = admin.rol.toString().toUpperCase();
+    console.log('🔍 [VALIDAR] Rol comparación:', rolUpper, 'vs ADMIN');
+    
+    if (rolUpper !== 'ADMIN') {
+      console.log('❌ [VALIDAR] Rol no autorizado:', admin.rol);
+      return NextResponse.json(
+        { error: `No autorizado. Rol actual: ${admin.rol}` },
         { status: 403 }
       );
     }
+
+    console.log('✅ [VALIDAR] Admin autorizado:', admin.email);
 
     // Verificar que el usuario a validar existe
     const usuario = await prisma.usuario.findUnique({
       where: { id: usuario_id }
     });
 
+    console.log('🔍 [VALIDAR] Usuario encontrado:', usuario ? { id: usuario.id, email: usuario.email, validado: usuario.validado } : 'null');
+
     if (!usuario) {
+      console.log('❌ [VALIDAR] Usuario no encontrado con ID:', usuario_id);
       return NextResponse.json(
         { error: 'Usuario no encontrado' },
         { status: 404 }
@@ -57,6 +77,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Validar usuario
+    console.log('🔄 [VALIDAR] Actualizando usuario...', { usuario_id, admin_id });
+    
     const usuarioActualizado = await prisma.usuario.update({
       where: { id: usuario_id },
       data: {
@@ -74,6 +96,13 @@ export async function POST(request: NextRequest) {
           }
         }
       }
+    });
+
+    console.log('✅ [VALIDAR] Usuario actualizado en BD:', {
+      id: usuarioActualizado.id,
+      validado: usuarioActualizado.validado,
+      fecha_validacion: usuarioActualizado.fechaValidacion,
+      validado_por_id: usuarioActualizado.validadoPorId
     });
 
     // Crear registro en historial de puntos
