@@ -40,29 +40,21 @@ export default function HistorialPuntos() {
     }
   };
 
-  const getTipoColor = (tipo: string) => {
-    switch (tipo.toLowerCase()) {
-      case 'compra':
-      case 'referido':
-      case 'manual_admin':
-        return 'text-green-400';
-      case 'canje':
-      case 'ajuste_negativo':
-        return 'text-red-400';
-      default:
-        return 'text-gray-400';
-    }
+  const getTipoColor = (puntos: number) => {
+    return puntos > 0 ? 'text-green-400' : 'text-red-400';
   };
 
   const getTipoIcon = (tipo: string) => {
     switch (tipo.toLowerCase()) {
-      case 'compra':
-        return '🛒';
+      case 'comprobante':
+        return '💰';
+      case 'bonus_referido':
+        return '🎁';
       case 'canje':
         return '🎁';
-      case 'referido':
-        return '👥';
-      case 'manual_admin':
+      case 'bono_bienvenida':
+        return '🎉';
+      case 'ajuste_manual':
         return '⚙️';
       default:
         return '📝';
@@ -170,7 +162,7 @@ export default function HistorialPuntos() {
                               <span className="text-sm text-gray-300 capitalize">{mov.tipo_transaccion.replace('_', ' ')}</span>
                             </div>
                           </td>
-                          <td className={`p-4 font-mono font-bold ${getTipoColor(mov.tipo_transaccion)}`}>
+                          <td className={`p-4 font-mono font-bold ${getTipoColor(mov.puntos_movimiento)}`}>
                             {mov.puntos_movimiento > 0 ? '+' : ''}{mov.puntos_movimiento.toLocaleString()}
                           </td>
                           <td className="p-4 text-sm text-gray-300">

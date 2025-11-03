@@ -21,6 +21,11 @@ export default function CargarComprobante({ usuarioId, onComprobanteSubido, onCl
   const [verificandoPendientes, setVerificandoPendientes] = useState(true);
   const [tienePendientes, setTienePendientes] = useState(false);
   const [comprobantesPendientes, setComprobantesPendientes] = useState<any[]>([]);
+  
+  // Sistema de referidos - Simplificado
+  const [esMiRecomendacion, setEsMiRecomendacion] = useState(false);
+  const [nombreComprador, setNombreComprador] = useState('');
+  const [dniComprador, setDniComprador] = useState('');
 
   // Verificar si tiene comprobantes pendientes al cargar
   useEffect(() => {
@@ -61,6 +66,7 @@ export default function CargarComprobante({ usuarioId, onComprobanteSubido, onCl
       setVerificandoPendientes(false);
     }
   };
+
 
   const handleArchivoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -131,12 +137,27 @@ export default function CargarComprobante({ usuarioId, onComprobanteSubido, onCl
       return;
     }
 
+    // Validar datos de referido si está marcado
+    if (esMiRecomendacion && !nombreComprador.trim()) {
+      setMensaje({ tipo: 'error', texto: 'Debes ingresar el nombre del comprador' });
+      return;
+    }
+
     setCargando(true);
     setMensaje(null);
 
     try {
       // Convertir archivo a base64
       const base64 = await convertirABase64(archivo);
+
+      // 🔍 DEBUG - Ver qué se va a enviar
+      const datosReferido = {
+        esMiRecomendacion,
+        referido_por_id: esMiRecomendacion ? usuarioId : null,
+        nombre_comprador: esMiRecomendacion ? nombreComprador.trim() : null,
+        dni_comprador: esMiRecomendacion ? dniComprador.trim() : null,
+      };
+      console.log('🎁 Datos de referido a enviar:', datosReferido);
 
       // Enviar al servidor
       const response = await fetch('/api/comprobantes', {
@@ -153,6 +174,11 @@ export default function CargarComprobante({ usuarioId, onComprobanteSubido, onCl
           marca_modelo: marcaModelo.trim() || null,
           comprobante_base64: base64,
           tipo_archivo: archivo.type,
+          // Sistema de referidos simplificado
+          es_mi_recomendacion: esMiRecomendacion,
+          referido_por_id: esMiRecomendacion ? usuarioId : null,
+          nombre_comprador: esMiRecomendacion ? nombreComprador.trim() : null,
+          dni_comprador: esMiRecomendacion ? dniComprador.trim() : null,
         }),
       });
 
@@ -382,6 +408,100 @@ export default function CargarComprobante({ usuarioId, onComprobanteSubido, onCl
           <p className="text-xs mt-1" style={{color: 'var(--muted-text)'}}>
             {descripcion.length}/500 caracteres
           </p>
+        </div>
+
+        {/* Sistema de Referidos - Simplificado */}
+        <div className="space-y-3 p-3 rounded-lg" style={{backgroundColor: 'rgba(139, 92, 246, 0.05)', border: '1px solid rgba(139, 92, 246, 0.2)'}}>
+          <div className="flex items-start gap-2">
+            <input
+              type="checkbox"
+              id="es-mi-recomendacion"
+              checked={esMiRecomendacion}
+              onChange={(e) => {
+                setEsMiRecomendacion(e.target.checked);
+                if (!e.target.checked) {
+                  setNombreComprador('');
+                  setDniComprador('');
+                }
+              }}
+              disabled={cargando || tienePendientes}
+              className="mt-0.5 w-4 h-4 rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+            />
+            <div className="flex-1">
+              <label htmlFor="es-mi-recomendacion" className="text-xs font-semibold cursor-pointer" style={{color: 'var(--heading-text)'}}>
+                ¿Recomendaste esta compra a alguien?
+              </label>
+              <p className="text-xs mt-0.5" style={{color: 'var(--muted-text)'}}>
+                Ganá <span className="font-bold text-green-600">50 pts ($50.000)</span> si la compra es mayor a $500.000 🚀
+              </p>
+            </div>
+          </div>
+
+          {esMiRecomendacion && (
+            <div className="space-y-2 pt-2 border-t" style={{borderColor: 'rgba(139, 92, 246, 0.2)'}}>
+              {/* Nombre del comprador */}
+              <div>
+                <label className="text-xs font-semibold" style={{color: 'var(--muted-text)'}}>
+                  Nombre del comprador *
+                </label>
+                <input
+                  type="text"
+                  value={nombreComprador}
+                  onChange={(e) => setNombreComprador(e.target.value)}
+                  className="input-nexus mt-1"
+                  placeholder="Ej: Pepito González"
+                  required={esMiRecomendacion}
+                  disabled={cargando || tienePendientes}
+                  maxLength={100}
+                />
+              </div>
+
+              {/* DNI del comprador (opcional) */}
+              <div>
+                <label className="text-xs font-semibold" style={{color: 'var(--muted-text)'}}>
+                  DNI del comprador (opcional)
+                </label>
+                <input
+                  type="text"
+                  value={dniComprador}
+                  onChange={(e) => setDniComprador(e.target.value)}
+                  className="input-nexus mt-1"
+                  placeholder="Ej: 12345678"
+                  disabled={cargando || tienePendientes}
+                  maxLength={20}
+                />
+              </div>
+            </div>
+          )}
+
+          {esMiRecomendacion && monto && parseFloat(monto) >= 500000 && (
+            <div className="p-3 rounded-lg" style={{backgroundColor: 'rgba(34, 197, 94, 0.1)', border: '1px solid rgba(34, 197, 94, 0.3)'}}>
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                <div>
+                  <p className="text-sm font-semibold text-green-600">
+                    🎁 ¡Genial! Recibirás 50 pts ($50.000) cuando se apruebe
+                  </p>
+                  <p className="text-xs" style={{color: 'var(--muted-text)'}}>
+                    Tu recomendación genera valor para ambos
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {esMiRecomendacion && monto && parseFloat(monto) < 500000 && (
+            <div className="p-3 rounded-lg" style={{backgroundColor: 'rgba(251, 146, 60, 0.1)', border: '1px solid rgba(251, 146, 60, 0.3)'}}>
+              <p className="text-xs text-amber-600 flex items-center gap-1">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+                La compra debe ser mayor a $500.000 para activar el beneficio del referido
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Archivo */}

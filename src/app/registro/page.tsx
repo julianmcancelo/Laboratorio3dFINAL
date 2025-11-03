@@ -135,70 +135,43 @@ export default function RegistroPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12" style={{
+    <div className="min-h-screen flex items-center justify-center px-4 py-6" style={{
       background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)'
     }}>
-      <div className="w-full max-w-2xl">
-        {/* Logo */}
-        <div className="text-center mb-8">
+      <div className="w-full max-w-xs">
+        {/* Logo compacto */}
+        <div className="text-center mb-4">
           <img 
             src="https://acdn-us.mitiendanube.com/stores/005/528/607/themes/common/logo-309059401-1733509141-c82e57a103c23bb99e23f909d3dbc85a1733509142.png?0" 
             alt="Logo Laboratorio 3D" 
-            className="h-16 mx-auto mb-6"
+            className="h-10 mx-auto mb-3"
           />
-          
-          {/* Título con badge */}
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <h1 className="text-3xl sm:text-4xl font-bold text-white">
-              Registro de Usuario
-            </h1>
-            <span className="px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">
-              Laboratorio 3D
-            </span>
-          </div>
-          
-          <p className="text-gray-400">
-            Crea tu cuenta y accede a beneficios exclusivos
+          <h1 className="text-xl font-bold text-white mb-1">
+            Crear Cuenta
+          </h1>
+          <p className="text-gray-400 text-xs">
+            Recibe 500 puntos de regalo 🎁
           </p>
         </div>
 
-        {/* Tarjetas de beneficios */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <div className="text-center p-4 rounded-xl border border-gray-700 bg-gray-800/30">
-            <div className="text-2xl mb-2">🎁</div>
-            <div className="text-green-400 font-bold text-lg">500 Puntos</div>
-            <div className="text-gray-400 text-sm">= $500.000</div>
-          </div>
-          <div className="text-center p-4 rounded-xl border border-gray-700 bg-gray-800/30">
-            <div className="text-2xl mb-2">⚡</div>
-            <div className="text-blue-400 font-bold text-lg">Registro</div>
-            <div className="text-gray-400 text-sm">Rápido</div>
-          </div>
-          <div className="text-center p-4 rounded-xl border border-gray-700 bg-gray-800/30">
-            <div className="text-2xl mb-2">🔒</div>
-            <div className="text-purple-400 font-bold text-lg">Datos</div>
-            <div className="text-gray-400 text-sm">Seguros</div>
-          </div>
-        </div>
-
-        {/* Card del formulario */}
-        <div className="rounded-2xl p-8 shadow-2xl" style={{
+        {/* Card del formulario compacto */}
+        <div className="rounded-xl p-5 shadow-2xl" style={{
           background: 'linear-gradient(135deg, #2d3748 0%, #1a202c 100%)',
           border: '1px solid rgba(255,255,255,0.1)'
         }}>
           {/* Mensaje de error */}
           {error && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-              <p className="text-red-400 text-sm text-center">{error}</p>
+            <div className="mb-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+              <p className="text-red-400 text-xs text-center">{error}</p>
             </div>
           )}
 
           {/* Formulario */}
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="space-y-3">
+            <div className="space-y-3">
               {/* Nombre Completo */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-xs font-medium text-gray-300 mb-1.5">
                   Nombre Completo*
                 </label>
                 <input
@@ -207,7 +180,7 @@ export default function RegistroPage() {
                   value={formData.nombre_completo}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                  className="w-full px-3 py-2 text-sm rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                   style={{
                     background: 'rgba(15, 25, 35, 0.5)',
                     border: '1px solid rgba(255,255,255,0.1)'
@@ -218,7 +191,7 @@ export default function RegistroPage() {
 
               {/* DNI */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-xs font-medium text-gray-300 mb-1.5">
                   DNI*
                 </label>
                 <input
@@ -227,7 +200,7 @@ export default function RegistroPage() {
                   value={formData.dni}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                  className="w-full px-3 py-2 text-sm rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                   style={{
                     background: 'rgba(15, 25, 35, 0.5)',
                     border: '1px solid rgba(255,255,255,0.1)'
@@ -239,7 +212,7 @@ export default function RegistroPage() {
 
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-xs font-medium text-gray-300 mb-1.5">
                 Email*
               </label>
               <input
@@ -248,7 +221,7 @@ export default function RegistroPage() {
                 value={formData.email}
                 onChange={handleChange}
                 required
-                className="w-full px-4 py-3 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                className="w-full px-3 py-2 text-sm rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 style={{
                   background: 'rgba(15, 25, 35, 0.5)',
                   border: '1px solid rgba(255,255,255,0.1)'
@@ -257,10 +230,10 @@ export default function RegistroPage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-3">
               {/* Contraseña */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
+                <label className="block text-xs font-medium text-gray-300 mb-1.5">
                   Contraseña* <span className="text-gray-500 text-xs">(mín. 8)</span>
                 </label>
                 <input
@@ -270,7 +243,7 @@ export default function RegistroPage() {
                   onChange={handleChange}
                   required
                   minLength={8}
-                  className="w-full px-4 py-3 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                  className="w-full px-3 py-2 text-sm rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                   style={{
                     background: 'rgba(15, 25, 35, 0.5)',
                     border: '1px solid rgba(255,255,255,0.1)'
@@ -281,8 +254,8 @@ export default function RegistroPage() {
 
               {/* Confirmar Contraseña */}
               <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Confirmar Contraseña*
+                <label className="block text-xs font-medium text-gray-300 mb-1.5">
+                  Confirmar*
                 </label>
                 <input
                   type="password"
@@ -290,7 +263,7 @@ export default function RegistroPage() {
                   value={formData.password_confirmation}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                  className="w-full px-3 py-2 text-sm rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                   style={{
                     background: 'rgba(15, 25, 35, 0.5)',
                     border: '1px solid rgba(255,255,255,0.1)'
@@ -300,163 +273,75 @@ export default function RegistroPage() {
               </div>
             </div>
 
-            {/* Sección de Redes Sociales */}
-            <div className="border-t border-gray-700 pt-5 mt-2">
-              <h3 className="text-lg font-semibold text-white mb-4">
-                📱 Redes Sociales <span className="text-gray-500 text-sm font-normal">(Opcionales)</span>
-              </h3>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Teléfono */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    📞 Teléfono
-                  </label>
-                  <input
-                    type="tel"
-                    name="telefono"
-                    value={formData.telefono}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                    style={{
-                      background: 'rgba(15, 25, 35, 0.5)',
-                      border: '1px solid rgba(255,255,255,0.1)'
-                    }}
-                    placeholder="+54 9 11 1234-5678"
-                  />
-                </div>
-
-                {/* WhatsApp */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    💬 WhatsApp
-                  </label>
-                  <input
-                    type="tel"
-                    name="whatsapp"
-                    value={formData.whatsapp}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                    style={{
-                      background: 'rgba(15, 25, 35, 0.5)',
-                      border: '1px solid rgba(255,255,255,0.1)'
-                    }}
-                    placeholder="+54 9 11 1234-5678"
-                  />
-                </div>
-
-                {/* Instagram */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    📷 Instagram
-                  </label>
-                  <input
-                    type="text"
-                    name="instagram"
-                    value={formData.instagram}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                    style={{
-                      background: 'rgba(15, 25, 35, 0.5)',
-                      border: '1px solid rgba(255,255,255,0.1)'
-                    }}
-                    placeholder="@tuusuario"
-                  />
-                </div>
-
-                {/* Facebook */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    👥 Facebook
-                  </label>
-                  <input
-                    type="text"
-                    name="facebook"
-                    value={formData.facebook}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                    style={{
-                      background: 'rgba(15, 25, 35, 0.5)',
-                      border: '1px solid rgba(255,255,255,0.1)'
-                    }}
-                    placeholder="Tu nombre en Facebook"
-                  />
-                </div>
-
-                {/* Telegram */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-300 mb-2">
-                    ✈️ Telegram
-                  </label>
-                  <input
-                    type="text"
-                    name="telegram"
-                    value={formData.telegram}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
-                    style={{
-                      background: 'rgba(15, 25, 35, 0.5)',
-                      border: '1px solid rgba(255,255,255,0.1)'
-                    }}
-                    placeholder="@tuusuario"
-                  />
-                </div>
-              </div>
+            {/* Instagram (simplificado) */}
+            <div>
+              <label className="block text-xs font-medium text-gray-300 mb-1.5">
+                📷 Instagram <span className="text-gray-500">(Opcional)</span>
+              </label>
+              <input
+                type="text"
+                name="instagram"
+                value={formData.instagram}
+                onChange={handleChange}
+                className="w-full px-3 py-2 text-sm rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                style={{
+                  background: 'rgba(15, 25, 35, 0.5)',
+                  border: '1px solid rgba(255,255,255,0.1)'
+                }}
+                placeholder="@tuusuario"
+              />
             </div>
 
-            {/* Código de Referido */}
-            <div className="border-t border-gray-700 pt-5">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                🎁 Código de Referido <span className="text-gray-500">(Opcional)</span>
+            {/* Código de Referido compacto */}
+            <div>
+              <label className="block text-xs font-medium text-gray-300 mb-1.5">
+                🎁 Código Referido <span className="text-gray-500">(Opcional)</span>
               </label>
               <input
                 type="text"
                 name="codigo_referido"
                 value={formData.codigo_referido}
                 onChange={handleChange}
-                className="w-full px-4 py-3 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                className="w-full px-3 py-2 text-sm rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 style={{
                   background: 'rgba(15, 25, 35, 0.5)',
                   border: '1px solid rgba(255,255,255,0.1)'
                 }}
-                placeholder="Ej: AMIGO123"
+                placeholder="AMIGO123"
               />
-              <p className="mt-2 text-sm text-blue-400">
-                💰 Si tenés un código, ganá $25.000 de descuento en tu primera compra {'>'} $500k
-              </p>
             </div>
 
-            {/* Botón de submit */}
+            {/* Botón de submit compacto */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 rounded-full font-bold text-white text-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] hover:shadow-2xl"
+              className="w-full py-2.5 rounded-full font-semibold text-sm text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] hover:shadow-xl"
               style={{
                 background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)'
               }}
             >
-              {loading ? 'Creando cuenta...' : 'Crear Cuenta Premium'}
+              {loading ? 'Creando...' : '✨ Crear Cuenta'}
             </button>
           </form>
 
-          {/* Link a login */}
-          <div className="mt-6 text-center">
-            <p className="text-gray-400">
-              ¿Ya tienes una cuenta?{' '}
-              <Link href="/login" className="text-orange-400 hover:text-orange-300 font-semibold transition-colors">
-                Inicia Sesión Aquí
+          {/* Link a login compacto */}
+          <div className="mt-4 text-center">
+            <p className="text-gray-400 text-xs">
+              ¿Ya tienes cuenta?{' '}
+              <Link href="/login" className="text-purple-400 hover:text-purple-300 font-semibold transition-colors">
+                Inicia Sesión
               </Link>
             </p>
           </div>
         </div>
 
-        {/* Link volver al inicio */}
-        <div className="mt-6 text-center">
-          <Link href="/" className="text-gray-400 hover:text-white transition-colors text-sm flex items-center justify-center gap-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {/* Link volver al inicio compacto */}
+        <div className="mt-4 text-center">
+          <Link href="/" className="text-gray-500 hover:text-gray-300 transition-colors text-xs flex items-center justify-center gap-1">
+            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            Volver al inicio
+            Volver
           </Link>
         </div>
       </div>

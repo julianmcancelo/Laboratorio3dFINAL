@@ -38,8 +38,8 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // Excluir administradores
-    whereClause.rol = { not: 'ADMIN' };
+    // MOSTRAR TODOS LOS USUARIOS (incluidos admins para poder revocar permisos)
+    // whereClause.rol = { not: 'ADMIN' }; // Comentado para mostrar todos
 
     const skip = (pagina - 1) * limite;
 
@@ -71,6 +71,7 @@ export async function GET(request: NextRequest) {
       dni: usuario.dni,
       instagram: usuario.instagram,
       rol: usuario.rol,
+      estado: usuario.aptoParaCanje ? 'ACTIVO' : 'BLOQUEADO', // Mapear aptoParaCanje a estado
       puntos: usuario.puntosAcumulados,
       nivel: usuario.nivelLealtad?.nombreNivel || 'Sin nivel',
       validado: usuario.validado,

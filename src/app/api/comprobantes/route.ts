@@ -22,7 +22,11 @@ export async function POST(request: NextRequest) {
       numero_serie = null,
       marca_modelo = null,
       comprobante_base64, 
-      tipo_archivo 
+      tipo_archivo,
+      es_mi_recomendacion = false,
+      referido_por_id = null,
+      nombre_comprador = null,
+      dni_comprador = null
     } = body;
 
     // Validaciones
@@ -79,12 +83,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Insertar comprobante con nuevos campos
+    // 🔍 DEBUG - Ver datos de referido
+    console.log('📝 Guardando comprobante con referido:', {
+      usuario_id,
+      monto,
+      es_mi_recomendacion,
+      referido_por_id,
+      nombre_comprador,
+      dni_comprador
+    });
+
+    // Insertar comprobante con datos de referido
     const [result]: any = await connection.execute(
       `INSERT INTO comprobantes 
-        (usuario_id, monto, tipo_producto, numero_serie, marca_modelo, descripcion, comprobante_base64, tipo_archivo, estado) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pendiente')`,
-      [usuario_id, monto, tipo_producto, numero_serie, marca_modelo, descripcion, comprobante_base64, tipo_archivo]
+        (usuario_id, monto, tipo_producto, numero_serie, marca_modelo, descripcion, comprobante_base64, tipo_archivo, estado, referido_por_id, nombre_comprador, dni_comprador) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pendiente', ?, ?, ?)`,
+      [usuario_id, monto, tipo_producto, numero_serie, marca_modelo, descripcion, comprobante_base64, tipo_archivo, referido_por_id, nombre_comprador, dni_comprador]
     );
 
     return NextResponse.json({

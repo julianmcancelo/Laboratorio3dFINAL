@@ -26,12 +26,20 @@ export async function GET(request: NextRequest) {
         c.descripcion,
         c.comprobante_base64,
         c.tipo_archivo,
+        c.tipo_producto,
+        c.numero_serie,
+        c.marca_modelo,
+        c.referido_por_id,
+        r.nombre_completo as referidor_nombre,
+        c.nombre_comprador,
+        c.dni_comprador,
         c.estado,
         c.puntos_otorgados,
         c.fecha_carga,
         c.fecha_validacion
       FROM comprobantes c
       INNER JOIN usuarios u ON c.usuario_id = u.id
+      LEFT JOIN usuarios r ON c.referido_por_id = r.id
       ORDER BY 
         CASE 
           WHEN c.estado = 'pendiente' THEN 1
@@ -187,13 +195,26 @@ export async function PUT(request: NextRequest) {
         );
         console.log('✅ Comprobante actualizado');
 
-        // Otorgar puntos al usuario
+        // Sumar puntos al usuario
         console.log(`💎 Sumando ${puntosAOtorgar} puntos al usuario ${comprobante.usuario_id}...`);
-        const [result]: any = await connection.execute(
+        const [updateResult]: any = await connection.execute(
           'UPDATE usuarios SET puntos_acumulados = puntos_acumulados + ? WHERE id = ?',
           [puntosAOtorgar, comprobante.usuario_id]
         );
-        console.log(`✅ UPDATE ejecutado. Filas afectadas: ${result.affectedRows}`);
+        console.log(`✅ UPDATE ejecutado. Filas afectadas: ${updateResult.affectedRows}`);
+
+        // Registrar en historial de puntos
+        await connection.execute(
+          `INSERT INTO historial_puntos (usuario_id, tipo, puntos, descripcion, comprobante_id)
+           VALUES (?, 'comprobante', ?, ?, ?)`,
+          [
+            comprobante.usuario_id,
+            puntosAOtorgar,
+            `Comprobante aprobado - ${comprobante.descripcion?.substring(0, 100) || 'Sin descripción'}`,
+            comprobante_id
+          ]
+        );
+        console.log('📝 Movimiento registrado en historial_puntos');
 
         // Verificar puntos DESPUÉS de sumar
         const [usuariosDespues]: any = await connection.execute(
@@ -210,14 +231,58 @@ export async function PUT(request: NextRequest) {
 
         console.log(`✅ Comprobante ${comprobante_id} aprobado - ${puntosAOtorgar} puntos otorgados`);
 
-        // 🎁 SISTEMA DE REFERIDOS: Otorgar puntos al referente si es primera compra
+        // 🎁 SISTEMA DE REFERIDOS SIMPLIFICADO: Bonificar al que cargó el comprobante
+        console.log('🔍 Verificando si este comprobante tiene referido...', {
+          referido_por_id: comprobante.referido_por_id,
+          monto: comprobante.monto,
+          nombre_comprador: comprobante.nombre_comprador
+        });
+
+        if (comprobante.referido_por_id && comprobante.monto >= 500000) {
+          try {
+            const bonusReferidor = 50; // 50 puntos = $50,000
+            
+            console.log('💰💰💰 APLICANDO BONUS DE REFERIDO - 50 PUNTOS 💰💰💰');
+            
+            await connection.execute(
+              'UPDATE usuarios SET puntos_acumulados = puntos_acumulados + ? WHERE id = ?',
+              [bonusReferidor, comprobante.referido_por_id]
+            );
+
+            // 📝 Registrar bonus de referido en historial
+            await connection.execute(
+              `INSERT INTO historial_puntos (usuario_id, tipo, puntos, descripcion, comprobante_id)
+               VALUES (?, 'bonus_referido', ?, ?, ?)`,
+              [
+                comprobante.referido_por_id,
+                bonusReferidor,
+                `Bonus por referir a ${comprobante.nombre_comprador || 'comprador'} - Compra: $${comprobante.monto.toLocaleString()}`,
+                comprobante_id
+              ]
+            );
+
+            console.log(`✅✅✅ BONUS DE 50 PUNTOS APLICADO Y REGISTRADO ✅✅✅
+              Usuario ID ${comprobante.referido_por_id} recibió +50 pts
+              Por recomendar a: ${comprobante.nombre_comprador || 'sin nombre'}
+              Compra de: $${comprobante.monto.toLocaleString()}`);
+          } catch (errorReferido) {
+            console.error('❌ Error al aplicar bonus de referido:', errorReferido);
+          }
+        } else {
+          console.log('❌ NO se aplica bonus de referido:', {
+            tiene_referido: !!comprobante.referido_por_id,
+            cumple_monto: comprobante.monto >= 500000
+          });
+        }
+
+        // 🎁 SISTEMA DE REFERIDOS ORIGINAL: Otorgar puntos al referente si es primera compra del usuario
         try {
           const puntosReferenteOtorgados = await otorgarPuntosReferente(comprobante.usuario_id);
           if (puntosReferenteOtorgados) {
-            console.log('🎉 Puntos de referido otorgados exitosamente');
+            console.log('🎉 Puntos de referido del usuario otorgados exitosamente');
           }
         } catch (errorReferido) {
-          console.error('⚠️ Error al otorgar puntos de referido (no crítico):', errorReferido);
+          console.error('⚠️ Error al otorgar puntos de referido del usuario (no crítico):', errorReferido);
           // No fallar la aprobación si hay error en referidos
         }
 

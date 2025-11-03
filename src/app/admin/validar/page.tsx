@@ -13,6 +13,13 @@ interface Comprobante {
   tipo_archivo: string;
   estado: 'pendiente' | 'aprobado' | 'rechazado';
   fecha_carga: string;
+  tipo_producto?: 'filamento' | 'impresora_3d' | 'otros';
+  numero_serie?: string;
+  marca_modelo?: string;
+  referido_por_id?: number;
+  referidor_nombre?: string;
+  nombre_comprador?: string;
+  dni_comprador?: string;
 }
 
 export default function ValidarComprobantes() {
@@ -21,6 +28,7 @@ export default function ValidarComprobantes() {
   const [loading, setLoading] = useState(true);
   const [procesando, setProcesando] = useState<number | null>(null);
   const [puntosEditar, setPuntosEditar] = useState<{[key: number]: number}>({});
+  const [expandido, setExpandido] = useState<number | null>(null);
 
   useEffect(() => {
     // Asegurar modo dark por defecto
@@ -175,88 +183,121 @@ export default function ValidarComprobantes() {
                   .map((comp) => (
                     <div
                       key={comp.id}
-                      className="glassmorphism-light rounded-2xl p-4 sm:p-6 hover:bg-white/20 transition-all"
+                      className="glassmorphism-light rounded-lg p-2 hover:bg-white/20 transition-all"
                     >
-                      {/* Usuario */}
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                          {comp.usuario_nombre.charAt(0).toUpperCase()}
+                      {/* Header: Usuario + Monto + Fecha + Expandir */}
+                      <div className="flex items-center justify-between mb-2 gap-2">
+                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                          <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                            {comp.usuario_nombre.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-white font-semibold text-xs truncate">{comp.usuario_nombre}</p>
+                            <p className="text-gray-400 text-xs">
+                              {new Date(comp.fecha_carga).toLocaleDateString('es-AR', { day: '2-digit', month: 'short' })}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-white font-semibold">{comp.usuario_nombre}</p>
-                          <p className="text-gray-300 text-sm">ID: {comp.usuario_id}</p>
+                        <button
+                          onClick={() => setExpandido(expandido === comp.id ? null : comp.id)}
+                          className="text-gray-400 hover:text-white transition-colors p-1"
+                          title="Expandir detalles"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            {expandido === comp.id ? (
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            ) : (
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            )}
+                          </svg>
+                        </button>
+                        <div className="text-right flex-shrink-0">
+                          <p className="text-green-400 font-bold text-lg leading-none">${(Number(comp.monto)/1000).toFixed(0)}k</p>
+                          <p className="text-yellow-400 text-xs font-bold">⭐{Math.floor(Number(comp.monto) / 1000)}</p>
                         </div>
                       </div>
 
-                      {/* Monto */}
-                      <div className="mb-4">
-                        <p className="text-gray-300 text-sm">Monto</p>
-                        <p className="text-2xl font-bold text-green-400">${Number(comp.monto).toFixed(2)}</p>
+                      {/* Info compacta en líneas */}
+                      <div className="space-y-1 mb-2">
+                        {comp.descripcion && (
+                          <p className="text-white text-xs truncate" title={comp.descripcion}>
+                            📝 {comp.descripcion}
+                          </p>
+                        )}
+                        
+                        {comp.tipo_producto && (
+                          <p className="text-blue-400 text-xs">
+                            {comp.tipo_producto === 'filamento' && '🧵 Filamento'}
+                            {comp.tipo_producto === 'impresora_3d' && `🖨️ ${comp.marca_modelo || 'Impresora'} ${comp.numero_serie ? `• ${comp.numero_serie}` : ''}`}
+                            {comp.tipo_producto === 'otros' && '📦 Otros'}
+                          </p>
+                        )}
+
+                        {comp.referido_por_id && (
+                          <p className="text-xs px-2 py-0.5 bg-purple-500/20 border border-purple-500/50 rounded inline-block">
+                            🎁 <span className="text-white">{comp.nombre_comprador || 'Sin nombre'}</span>
+                            {comp.dni_comprador && <span className="text-gray-400"> ({comp.dni_comprador})</span>}
+                            <span className="text-gray-400"> → </span>
+                            <span className="text-purple-300 font-bold">{comp.referidor_nombre || `ID${comp.referido_por_id}`}</span>
+                            {Number(comp.monto) >= 500000 && <span className="text-green-400 font-bold ml-1">+50pts</span>}
+                          </p>
+                        )}
                       </div>
 
-                      {/* Descripción */}
-                      {comp.descripcion && (
-                        <div className="mb-4">
-                          <p className="text-gray-300 text-sm">Descripción</p>
-                          <p className="text-white">{comp.descripcion}</p>
+                      {/* Imagen comprobante */}
+                      <img
+                        src={comp.comprobante_base64}
+                        alt="Comprobante"
+                        className={`w-full object-cover rounded cursor-pointer hover:opacity-80 transition-all mb-2 ${
+                          expandido === comp.id ? 'h-64' : 'h-24'
+                        }`}
+                        onClick={() => window.open(comp.comprobante_base64, '_blank')}
+                      />
+
+                      {/* Detalles expandidos */}
+                      {expandido === comp.id && (
+                        <div className="mb-2 p-2 bg-black/20 rounded space-y-1">
+                          <p className="text-white text-xs">
+                            <span className="text-gray-400">ID Usuario:</span> {comp.usuario_id}
+                          </p>
+                          <p className="text-white text-xs">
+                            <span className="text-gray-400">Monto completo:</span> ${Number(comp.monto).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </p>
+                          <p className="text-white text-xs">
+                            <span className="text-gray-400">Cálculo puntos:</span> ${Number(comp.monto).toLocaleString()} ÷ 1.000 = {Math.floor(Number(comp.monto) / 1000)} pts
+                          </p>
+                          {comp.descripcion && (
+                            <p className="text-white text-xs">
+                              <span className="text-gray-400">Descripción completa:</span> {comp.descripcion}
+                            </p>
+                          )}
+                          <p className="text-gray-400 text-xs">
+                            <span className="text-gray-400">Fecha:</span> {new Date(comp.fecha_carga).toLocaleString('es-AR', {
+                              day: '2-digit',
+                              month: 'long',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
                         </div>
                       )}
 
-                      {/* Imagen del comprobante */}
-                      <div className="mb-4">
-                        <p className="text-gray-300 text-sm mb-2">Comprobante</p>
-                        <img
-                          src={comp.comprobante_base64}
-                          alt="Comprobante"
-                          className="w-full h-48 object-cover rounded-xl cursor-pointer hover:scale-105 transition-transform"
-                          onClick={() => window.open(comp.comprobante_base64, '_blank')}
-                        />
-                      </div>
-
-                      {/* Fecha */}
-                      <p className="text-gray-400 text-xs mb-4">
-                        Subido: {new Date(comp.fecha_carga).toLocaleDateString('es-AR', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </p>
-
-                      {/* Puntos a otorgar (calculado automáticamente) */}
-                      <div className="mb-4">
-                        <label className="text-gray-300 text-sm block mb-2">
-                          Puntos a otorgar (automático)
-                        </label>
-                        <div className="w-full bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-2 border-yellow-500 text-white text-2xl font-bold px-4 py-4 rounded-xl text-center">
-                          ⭐ {Math.floor(Number(comp.monto) / 1000)} pts
-                        </div>
-                        <div className="mt-2 p-3 bg-blue-500/10 border border-blue-500/30 rounded-lg">
-                          <p className="text-blue-400 text-xs">
-                            📐 Cálculo: ${Number(comp.monto).toLocaleString()} ÷ 1.000 = {Math.floor(Number(comp.monto) / 1000)} puntos
-                          </p>
-                          <p className="text-gray-400 text-xs mt-1">
-                            📋 Según documento oficial: 1 punto = $1.000
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Acciones */}
-                      <div className="flex gap-3">
+                      {/* Botones */}
+                      <div className="grid grid-cols-2 gap-1">
                         <button
                           onClick={() => validarComprobante(comp.id, true)}
                           disabled={procesando === comp.id}
-                          className="flex-1 bg-green-600 hover:bg-green-700 text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="bg-green-600 hover:bg-green-700 text-white py-1.5 rounded text-xs font-bold transition-all disabled:opacity-50"
                         >
-                          {procesando === comp.id ? '⏳' : '✅'} Aprobar
+                          {procesando === comp.id ? '⏳' : '✅ Aprobar'}
                         </button>
                         <button
                           onClick={() => validarComprobante(comp.id, false)}
                           disabled={procesando === comp.id}
-                          className="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-xl font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="bg-red-600 hover:bg-red-700 text-white py-1.5 rounded text-xs font-bold transition-all disabled:opacity-50"
                         >
-                          {procesando === comp.id ? '⏳' : '❌'} Rechazar
+                          {procesando === comp.id ? '⏳' : '❌ Rechazar'}
                         </button>
                       </div>
                     </div>

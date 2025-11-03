@@ -218,6 +218,14 @@ export default function Dashboard() {
             window.location.href = '/admin';
             return;
           }
+
+          // 🚫 VERIFICAR SI ESTÁ BLOQUEADO
+          if (data.usuario.apto_para_canje === false) {
+            // Guardar datos para mostrar en página de bloqueo
+            localStorage.setItem('user_data', JSON.stringify(data.usuario));
+            window.location.href = '/bloqueado';
+            return;
+          }
           
           setUsuario(data.usuario);
           

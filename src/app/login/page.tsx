@@ -94,56 +94,51 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center px-4" style={{
       background: 'linear-gradient(135deg, #1a2332 0%, #0f1923 100%)'
     }}>
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-xs">
         {/* Card principal */}
-        <div className="rounded-3xl p-8 shadow-2xl" style={{
+        <div className="rounded-xl p-5 shadow-2xl" style={{
           background: 'linear-gradient(135deg, #2d3748 0%, #1a202c 100%)',
           border: '1px solid rgba(255,255,255,0.1)'
         }}>
           {/* Logo */}
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center mb-6">
+          <div className="text-center mb-4">
+            <div className="inline-flex items-center justify-center mb-3">
               <img 
                 src="https://acdn-us.mitiendanube.com/stores/005/528/607/themes/common/logo-309059401-1733509141-c82e57a103c23bb99e23f909d3dbc85a1733509142.png?0" 
                 alt="Logo Laboratorio 3D" 
-                className="h-16"
+                className="h-10"
               />
             </div>
             
             {/* Título con badge */}
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <h1 className="text-3xl font-bold text-white">
-                Iniciar Sesión
-              </h1>
-              <span className="px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">
-                Laboratorio 3D
-              </span>
-            </div>
+            <h1 className="text-xl font-bold text-white mb-1">
+              Iniciar Sesión
+            </h1>
             
-            <p className="text-gray-400">
-              Accede a tu cuenta premium y disfruta tus beneficios
+            <p className="text-gray-400 text-xs">
+              Accede a tu cuenta
             </p>
           </div>
 
           {/* Mensaje de éxito */}
           {successMessage && (
-            <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-              <p className="text-green-400 text-sm text-center">{successMessage}</p>
+            <div className="mb-3 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+              <p className="text-green-400 text-xs text-center">{successMessage}</p>
             </div>
           )}
 
           {/* Mensaje de error */}
           {error && (
-            <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
-              <p className="text-red-400 text-sm text-center">{error}</p>
+            <div className="mb-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+              <p className="text-red-400 text-xs text-center">{error}</p>
             </div>
           )}
 
           {/* Formulario */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-3">
             {/* Email */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-xs font-medium text-gray-300 mb-1.5">
                 Email*
               </label>
               <input
@@ -162,7 +157,7 @@ export default function LoginPage() {
 
             {/* Contraseña */}
             <div>
-              <label className="block text-sm font-medium text-gray-300 mb-2">
+              <label className="block text-xs font-medium text-gray-300 mb-1.5">
                 Contraseña*
               </label>
               <input
@@ -170,7 +165,7 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
+                className="w-full px-3 py-2 rounded-lg text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500 transition-all"
                 style={{
                   background: 'rgba(15, 25, 35, 0.5)',
                   border: '1px solid rgba(255,255,255,0.1)'
@@ -183,12 +178,12 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 rounded-full font-bold text-white text-lg transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] hover:shadow-2xl flex items-center justify-center gap-2"
+              className="w-full py-2.5 rounded-full font-semibold text-sm text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] hover:shadow-xl flex items-center justify-center gap-2"
               style={{
                 background: 'linear-gradient(135deg, #a855f7 0%, #ec4899 100%)'
               }}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
               </svg>
               {loading ? 'Iniciando...' : 'Iniciar Sesión'}
@@ -196,13 +191,13 @@ export default function LoginPage() {
           </form>
 
           {/* Link a registro */}
-          <div className="mt-6 text-center">
-          <div className="flex justify-between items-center mb-4">
-            <Link href="/recuperar" className="text-purple-400 hover:text-purple-300 transition-colors text-sm">
+          <div className="mt-4 text-center">
+          <div className="flex justify-center items-center mb-3">
+            <Link href="/forgot-password" className="text-purple-400 hover:text-purple-300 transition-colors text-sm">
               ¿Olvidaste tu contraseña?
             </Link>
           </div>
-          <p className="text-gray-300">
+          <p className="text-gray-300 text-xs">
             ¿No tienes cuenta?{' '}
             <Link href="/registro" className="text-purple-400 hover:text-purple-300 transition-colors font-semibold">
               Regístrate
@@ -211,23 +206,23 @@ export default function LoginPage() {
         </div>
 
           {/* Footer con iconos */}
-          <div className="mt-8 pt-6 border-t border-gray-700 flex items-center justify-center gap-6 text-sm text-gray-400">
+          <div className="mt-6 pt-4 border-t border-gray-700 flex items-center justify-center gap-4 text-xs text-gray-400">
             <div className="flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
               <span>Seguro</span>
             </div>
             <span className="text-gray-600">·</span>
             <div className="flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
               <span>Rápido</span>
             </div>
             <span className="text-gray-600">·</span>
             <div className="flex items-center gap-2">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span>Confiable</span>

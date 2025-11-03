@@ -242,6 +242,10 @@ export async function PUT(request: NextRequest) {
     const hasImageBase64 = columnNames.includes('imagen_base64');
     const hasTipoImagen = columnNames.includes('tipo_imagen');
     const hasStock = columnNames.includes('stock');
+    
+    console.log('📋 Columnas detectadas:', columnNames);
+    console.log('✅ hasStock:', hasStock);
+    console.log('📦 stock recibido:', stock);
 
     // Construir UPDATE dinámicamente
     const updateFields = [

@@ -94,7 +94,7 @@ export default function GestionarPremios() {
         nombre: premio.nombre || '',
         descripcion: premio.descripcion || '',
         puntos_requeridos: premio.puntos_requeridos !== undefined ? premio.puntos_requeridos.toString() : '0',
-        stock: premio.stock !== undefined ? premio.stock.toString() : '0',
+        stock: (premio.stock !== undefined && premio.stock !== null) ? premio.stock.toString() : '0',
         imagen_base64: (premio as any).imagen_base64 || '',
         tipo_imagen: (premio as any).tipo_imagen || '',
         activo: premio.activo !== undefined ? premio.activo : true

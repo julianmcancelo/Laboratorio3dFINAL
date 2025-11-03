@@ -152,6 +152,14 @@ export default function PremiosPage() {
 
       if (response.ok) {
         const data = await response.json();
+        
+        // 🚫 VERIFICAR SI ESTÁ BLOQUEADO
+        if (data.usuario.apto_para_canje === false) {
+          localStorage.setItem('user_data', JSON.stringify(data.usuario));
+          router.push('/bloqueado');
+          return;
+        }
+        
         setUsuario(data.usuario);
       } else {
         router.push('/login');

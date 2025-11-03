@@ -25,6 +25,11 @@ function generarCodigoReferido(): string {
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   try {
+    // Obtener IP del usuario
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const realIp = request.headers.get('x-real-ip');
+    const ip = forwardedFor?.split(',')[0] || realIp || 'unknown';
+
     // Verificar conexión a Prisma
     const connected = await testConnection();
     if (!connected) {
@@ -46,7 +51,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       acepta_privacidad
     } = await request.json();
 
-    console.log(`📝 Intento de registro: ${email} - ${nombre_completo}`);
+    console.log(`📝 Intento de registro desde IP ${ip}: ${email} - ${nombre_completo}`);
 
     // Validaciones básicas
     if (!nombre_completo || !dni || !email || !password) {
@@ -107,9 +112,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       referido_por_id: undefined, // TODO: Implementar lógica de referidos si es necesario
       apto_para_canje: true,
       nivel_lealtad_id: 1 // ID del nivel Bronce
-    });
+      // NOTA: Descomentar después de ejecutar AGREGAR-TABLA-IPS.sql
+      // ip_registro: ip,
+      // ultima_ip: ip,
+      // ultima_conexion: new Date()
+    } as any); // Temporal hasta ejecutar migración
 
-    console.log(`✅ Usuario creado exitosamente: ${email} (ID: ${usuarioId})`);
+    console.log(`✅ Usuario creado exitosamente desde IP ${ip}: ${email} (ID: ${usuarioId})`);
 
     return NextResponse.json({
       success: true,

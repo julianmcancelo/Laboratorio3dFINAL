@@ -31,15 +31,15 @@ export async function GET(request: NextRequest) {
     const [rows]: any = await connection.execute(
       `SELECT 
         hp.id as historial_id,
-        hp.fecha_transaccion,
-        hp.tipo_transaccion,
-        hp.puntos_movimiento,
-        hp.descripcion_detalle,
+        hp.created_at as fecha_transaccion,
+        hp.tipo as tipo_transaccion,
+        hp.puntos as puntos_movimiento,
+        hp.descripcion as descripcion_detalle,
         u.nombre_completo as nombre_usuario_afectado,
         u.email as email_usuario_afectado
       FROM historial_puntos hp
       JOIN usuarios u ON hp.usuario_id = u.id
-      ORDER BY hp.fecha_transaccion DESC
+      ORDER BY hp.created_at DESC
       LIMIT ? OFFSET ?`,
       [resultadosPorPagina, offset]
     );

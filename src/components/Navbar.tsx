@@ -25,6 +25,12 @@ interface NivelLealtad {
 
 export default function Navbar() {
   const pathname = usePathname();
+  
+  // No mostrar navbar en páginas específicas
+  if (pathname === '/bloqueado' || pathname === '/login' || pathname === '/registro' || pathname === '/forgot-password' || pathname?.startsWith('/reset-password')) {
+    return null;
+  }
+  
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [loading, setLoading] = useState(true);
   const [menuAbierto, setMenuAbierto] = useState(false);

@@ -63,7 +63,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         nivel: usuario.nivel || 'Bronce', // Ahora usa el nombre del nivel
         rol: usuario.rol,
         codigo_referido: usuario.codigo_referido,
-        instagram: usuario.instagram
+        instagram: usuario.instagram,
+        apto_para_canje: usuario.apto_para_canje,
+        validado: (usuario as any).validado || false
       },
       sesion: {
         id: sesion.id,
