@@ -327,7 +327,11 @@ export default function PremiosPage() {
 
       if (response.ok) {
         // Actualizar UI
-        setPremiosCanjeados(prev => new Set<number>([...prev, premioSeleccionado.id]));
+        setPremiosCanjeados(prev => {
+          const newSet = new Set(prev);
+          newSet.add(premioSeleccionado.id);
+          return newSet;
+        });
         setMostrarModal(false);
         
         // Recargar datos del usuario

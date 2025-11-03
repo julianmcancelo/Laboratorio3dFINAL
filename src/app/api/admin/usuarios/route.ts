@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
       instagram: usuario.instagram,
       rol: usuario.rol,
       puntos: usuario.puntosAcumulados,
-      nivel: usuario.nivelLealtad?.nombre || 'Sin nivel',
+      nivel: usuario.nivelLealtad?.nombreNivel || 'Sin nivel',
       validado: usuario.validado,
       fecha_validacion: usuario.fechaValidacion,
       validado_por: usuario.validadoPor?.nombreCompleto || null,
