@@ -26,6 +26,9 @@ interface Usuario {
   codigo_referido?: string;
   instagram?: string;
   rol: string;
+  validado: boolean;
+  apto_para_canje: boolean;
+  motivo_rechazo?: string;
 }
 
 interface Premio {
@@ -669,9 +672,34 @@ export default function Dashboard() {
                 
                 {/* Info */}
                 <div className="flex-1">
-                  <h2 className="text-2xl sm:text-3xl font-black mb-1 tracking-tight" style={{color: 'var(--heading-text)'}}>
-                    {usuario.nombre_completo}
-                  </h2>
+                  <div className="flex items-center gap-3 mb-2">
+                    <h2 className="text-2xl sm:text-3xl font-black tracking-tight" style={{color: 'var(--heading-text)'}}>
+                      {usuario.nombre_completo}
+                    </h2>
+                    {/* Badge de estado de validación */}
+                    {usuario.validado ? (
+                      <div className="px-3 py-1 rounded-full bg-green-100 text-green-800 text-xs font-bold flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        Validado
+                      </div>
+                    ) : usuario.motivo_rechazo ? (
+                      <div className="px-3 py-1 rounded-full bg-red-100 text-red-800 text-xs font-bold flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        </svg>
+                        Rechazado
+                      </div>
+                    ) : (
+                      <div className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-bold flex items-center gap-1">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                        </svg>
+                        Pendiente
+                      </div>
+                    )}
+                  </div>
                   {(() => {
                     const nivelActual = getNivelAutomatico(usuario.puntos || 0);
                     const nivelNormalizado = nivelActual.toLowerCase();
@@ -707,6 +735,41 @@ export default function Dashboard() {
                 </div>
               </div>
 
+              {/* Estado de Validación */}
+              {!usuario.validado && (
+                <div className="glassmorphism-light rounded-xl p-4 mb-4 shadow-lg border-2" style={{borderColor: usuario.motivo_rechazo ? '#ef4444' : '#f59e0b'}}>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${usuario.motivo_rechazo ? 'bg-red-100' : 'bg-yellow-100'}`}>
+                      {usuario.motivo_rechazo ? (
+                        <svg className="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        </svg>
+                      ) : (
+                        <svg className="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                        </svg>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-lg mb-1" style={{color: 'var(--heading-text)'}}>
+                        {usuario.motivo_rechazo ? 'Validación Rechazada' : 'Validación Pendiente'}
+                      </h3>
+                      <p className="text-sm" style={{color: 'var(--muted-text)'}}>
+                        {usuario.motivo_rechazo 
+                          ? `Tu cuenta fue rechazada. Motivo: ${usuario.motivo_rechazo}`
+                          : 'Tu cuenta está pendiente de validación por un administrador.'
+                        }
+                      </p>
+                      {!usuario.motivo_rechazo && (
+                        <p className="text-xs mt-2" style={{color: 'var(--muted-text)'}}>
+                          Te notificaremos cuando tu cuenta sea validada. Mientras tanto, puedes seguir acumulando puntos.
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Points Display con efecto pulse */}
               <div className="glassmorphism-light relative rounded-xl p-4 sm:p-5 mb-4 shadow-lg transition-all duration-300 overflow-hidden group border-2" style={{borderColor: getColorPuntosByNivel()}}>
                 {/* Points Pulse Animation - color dinámico */}
@@ -730,18 +793,30 @@ export default function Dashboard() {
                   </div>
                   
                   {/* Botón al catálogo de premios - color dinámico según nivel */}
-                  <Link 
-                    href="/premios"
-                    className={`flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r ${getGradienteBotonByNivel()} text-white rounded-xl font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl ${getShadowByNivel()}`}
-                  >
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
-                    </svg>
-                    <span>Ver Catálogo de Premios</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </Link>
+                  {usuario.validado ? (
+                    <Link 
+                      href="/premios"
+                      className={`flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r ${getGradienteBotonByNivel()} text-white rounded-xl font-bold transition-all duration-300 hover:scale-105 hover:shadow-xl ${getShadowByNivel()}`}
+                    >
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M5 4a2 2 0 012-2h6a2 2 0 012 2v14l-5-2.5L5 18V4z" />
+                      </svg>
+                      <span>Ver Catálogo de Premios</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2 px-4 py-3 bg-gray-200 text-gray-500 rounded-xl font-bold cursor-not-allowed">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                      </svg>
+                      <span>Catálogo Bloqueado</span>
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  )}
                 </div>
               </div>
 

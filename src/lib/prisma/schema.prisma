@@ -21,11 +21,19 @@ model Usuario {
   referidoPorId    Int?           @map("referido_por_id")
   aptoParaCanje    Boolean        @default(false) @map("apto_para_canje")
   nivelLealtadId   Int?           @map("nivel_lealtad_id")
+  validado         Boolean        @default(false) @map("validado")
+  fechaValidacion  DateTime?      @map("fecha_validacion") @db.Timestamp(0)
+  validadoPorId    Int?           @map("validado_por_id")
+  motivoRechazo    String?        @map("motivo_rechazo") @db.Text
   createdAt        DateTime       @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt        DateTime       @default(now()) @updatedAt @map("updated_at") @db.Timestamp(0)
   canjes_premios   CanjesPremio[]
   compras          Compra[]
   nivelLealtad     NivelLealtad?  @relation(fields: [nivelLealtadId], references: [id], onUpdate: Restrict, map: "fk_usuario_nivel_lealtad")
+  referidoPor      Usuario?       @relation("UsuarioReferido", fields: [referidoPorId], references: [id])
+  referidos        Usuario[]      @relation("UsuarioReferido")
+  validadoPor      Usuario?       @relation("UsuarioValidado", fields: [validadoPorId], references: [id])
+  validados        Usuario[]      @relation("UsuarioValidado")
 
   @@index([nivelLealtadId], map: "fk_usuario_nivel_lealtad")
   @@map("usuarios")

@@ -539,17 +539,45 @@ export default function AdminDashboard() {
               </button>
             </div>
             <nav className="space-y-3">
-              <Link href="/admin/premios" className="action-card group block w-full text-left p-3 rounded-lg hover:border-amber-400/70" style={{color: 'var(--accent-amber)'}}>
-                <span className="font-semibold">Premios</span>
+              <Link 
+                href="/admin/usuarios" 
+                className="action-card group block w-full text-left p-3 rounded-lg hover:border-blue-400/70" 
+                style={{color: 'var(--accent-blue)'}}
+                onClick={() => setModalConfig(false)}
+              >
+                <span className="font-semibold">👥 Gestión de Usuarios</span>
               </Link>
-              <Link href="/admin/niveles" className="action-card group block w-full text-left p-3 rounded-lg hover:border-orange-400/70" style={{color: 'var(--accent-orange)'}}>
-                <span className="font-semibold">Niveles de Lealtad</span>
+              <Link 
+                href="/admin/premios" 
+                className="action-card group block w-full text-left p-3 rounded-lg hover:border-amber-400/70" 
+                style={{color: 'var(--accent-amber)'}}
+                onClick={() => setModalConfig(false)}
+              >
+                <span className="font-semibold">🎁 Premios</span>
               </Link>
-              <Link href="/admin/referidos" className="action-card group block w-full text-left p-3 rounded-lg hover:border-lime-400/70" style={{color: 'var(--accent-lime)'}}>
-                <span className="font-semibold">Sistema de Referidos</span>
+              <Link 
+                href="/admin/niveles" 
+                className="action-card group block w-full text-left p-3 rounded-lg hover:border-orange-400/70" 
+                style={{color: 'var(--accent-orange)'}}
+                onClick={() => setModalConfig(false)}
+              >
+                <span className="font-semibold">🏆 Niveles de Lealtad</span>
               </Link>
-              <Link href="/admin/historial-puntos" className="action-card group block w-full text-left p-3 rounded-lg hover:border-purple-400/70" style={{color: 'var(--accent-purple)'}}>
-                <span className="font-semibold">Historial de Puntos</span>
+              <Link 
+                href="/admin/referidos" 
+                className="action-card group block w-full text-left p-3 rounded-lg hover:border-lime-400/70" 
+                style={{color: 'var(--accent-lime)'}}
+                onClick={() => setModalConfig(false)}
+              >
+                <span className="font-semibold">🔗 Sistema de Referidos</span>
+              </Link>
+              <Link 
+                href="/admin/historial-puntos" 
+                className="action-card group block w-full text-left p-3 rounded-lg hover:border-purple-400/70" 
+                style={{color: 'var(--accent-purple)'}}
+                onClick={() => setModalConfig(false)}
+              >
+                <span className="font-semibold">📊 Historial de Puntos</span>
               </Link>
             </nav>
           </div>

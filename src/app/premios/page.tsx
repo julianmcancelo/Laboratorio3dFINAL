@@ -50,135 +50,74 @@ export default function PremiosPage() {
   const [nivelesLealtad, setNivelesLealtad] = useState<NivelLealtad[]>([]);
   const [tema, setTema] = useState<'dark' | 'light'>('dark');
 
-  // Cargar tema desde localStorage
-  useEffect(() => {
-    const temaGuardado = localStorage.getItem('tema') as 'dark' | 'light';
-    if (temaGuardado) {
-      setTema(temaGuardado);
-      if (temaGuardado === 'light') {
-        document.documentElement.classList.add('light-mode');
-      }
-    }
-  }, []);
-
-  // Toggle de tema
+  // Toggle tema
   const toggleTema = () => {
     const nuevoTema = tema === 'dark' ? 'light' : 'dark';
     setTema(nuevoTema);
-    localStorage.setItem('tema', nuevoTema);
+    localStorage.setItem('theme', nuevoTema);
     
-    if (nuevoTema === 'light') {
-      document.documentElement.classList.add('light-mode');
+    // Actualizar variables CSS
+    const root = document.documentElement;
+    if (nuevoTema === 'dark') {
+      root.style.setProperty('--main-bg', '#0f172a');
+      root.style.setProperty('--main-text', '#f1f5f9');
+      root.style.setProperty('--muted-text', '#94a3b8');
+      root.style.setProperty('--card-bg', 'rgba(30, 41, 59, 0.8)');
+      root.style.setProperty('--heading-text', '#f8fafc');
+      root.style.setProperty('--accent-amber', '#f59e0b');
+      root.style.setProperty('--accent-blue', '#3b82f6');
+      root.style.setProperty('--accent-purple', '#8b5cf6');
+      root.style.setProperty('--accent-green', '#10b981');
+      root.style.setProperty('--accent-red', '#ef4444');
     } else {
-      document.documentElement.classList.remove('light-mode');
+      root.style.setProperty('--main-bg', '#f8fafc');
+      root.style.setProperty('--main-text', '#1e293b');
+      root.style.setProperty('--muted-text', '#64748b');
+      root.style.setProperty('--card-bg', 'rgba(255, 255, 255, 0.9)');
+      root.style.setProperty('--heading-text', '#0f172a');
+      root.style.setProperty('--accent-amber', '#f59e0b');
+      root.style.setProperty('--accent-blue', '#3b82f6');
+      root.style.setProperty('--accent-purple', '#8b5cf6');
+      root.style.setProperty('--accent-green', '#10b981');
+      root.style.setProperty('--accent-red', '#ef4444');
     }
   };
 
-  // Verificar sesión y cargar datos del usuario
+  // Cargar tema al montar
   useEffect(() => {
-    const verificarSesion = async () => {
-      const sessionId = localStorage.getItem('session_id');
-      
-      if (!sessionId) {
-        router.push('/login');
-        return;
-      }
-
-      try {
-        const response = await fetch('/api/auth/verify', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${sessionId}`
-          }
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log('👤 Usuario cargado:', data.usuario);
-          console.log('💎 Puntos del usuario:', data.usuario.puntos);
-          setUsuario(data.usuario);
-        } else {
-          router.push('/login');
-        }
-      } catch (error) {
-        console.error('Error verificando sesión:', error);
-        router.push('/login');
-      }
-    };
-
-    verificarSesion();
-  }, [router]);
-
-  // Cargar premios y canjes previos
-  useEffect(() => {
-    const cargarDatos = async () => {
-      const sessionId = localStorage.getItem('session_id');
-      
-      try {
-        // Cargar niveles de lealtad
-        const nivelesResponse = await fetch('/api/niveles');
-        if (nivelesResponse.ok) {
-          const nivelesData = await nivelesResponse.json();
-          setNivelesLealtad(nivelesData.niveles || []);
-          console.log('📊 Niveles cargados:', nivelesData.niveles);
-        }
-
-        // Cargar premios
-        const responsePremios = await fetch('/api/premios/publicos');
-        const dataPremios = await responsePremios.json();
-        
-        if (dataPremios.success) {
-          setPremios(dataPremios.premios);
-          setPremiosFiltrados(dataPremios.premios);
-        }
-
-        // Cargar historial de canjes del usuario
-        if (sessionId) {
-          const responseCanjes = await fetch('/api/canjes', {
-            headers: {
-              'Authorization': `Bearer ${sessionId}`
-            }
-          });
-          
-          if (responseCanjes.ok) {
-            const dataCanjes = await responseCanjes.json();
-            if (dataCanjes.success && dataCanjes.canjes) {
-              // Extraer IDs de premios ya canjeados
-              const idsCanjeados = new Set<number>(
-                dataCanjes.canjes
-                  .filter((canje: any) => canje.premio_id) // Filtrar solo canjes con premio_id válido
-                  .map((canje: any) => Number(canje.premio_id))
-              );
-              setPremiosCanjeados(idsCanjeados);
-              console.log('🎁 Premios ya canjeados:', Array.from(idsCanjeados));
-            }
-          }
-        }
-      } catch (error) {
-        console.error('Error al cargar datos:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    cargarDatos();
+    const savedTheme = localStorage.getItem('theme') as 'dark' | 'light' || 'dark';
+    setTema(savedTheme);
+    toggleTema();
   }, []);
 
-  // Aplicar filtros y ordenamiento
+  // Cargar datos del usuario
   useEffect(() => {
-    let resultado = [...premios];
+    cargarDatosUsuario();
+    cargarNivelesLealtad();
+  }, []);
 
-    // Filtro por búsqueda
+  // Cargar premios
+  useEffect(() => {
+    if (usuario) {
+      cargarPremios();
+    }
+  }, [usuario]);
+
+  // Filtrar y ordenar premios
+  useEffect(() => {
+    let filtrados = [...premios];
+
+    // Filtrar por búsqueda
     if (busqueda) {
-      resultado = resultado.filter(p => 
+      filtrados = filtrados.filter(p => 
         p.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
         p.descripcion.toLowerCase().includes(busqueda.toLowerCase())
       );
     }
 
-    // Filtro por nivel
+    // Filtrar por nivel
     if (filtroNivel !== 'todos') {
-      resultado = resultado.filter(p => {
+      filtrados = filtrados.filter(p => {
         if (filtroNivel === 'bronce') return p.puntos_requeridos < 10000;
         if (filtroNivel === 'plata') return p.puntos_requeridos >= 10000 && p.puntos_requeridos < 20000;
         if (filtroNivel === 'oro') return p.puntos_requeridos >= 20000;
@@ -186,16 +125,94 @@ export default function PremiosPage() {
       });
     }
 
-    // Ordenamiento
-    resultado.sort((a, b) => {
+    // Ordenar
+    filtrados.sort((a, b) => {
       if (ordenar === 'puntos_asc') return a.puntos_requeridos - b.puntos_requeridos;
       if (ordenar === 'puntos_desc') return b.puntos_requeridos - a.puntos_requeridos;
       if (ordenar === 'nombre') return a.nombre.localeCompare(b.nombre);
       return 0;
     });
 
-    setPremiosFiltrados(resultado);
+    setPremiosFiltrados(filtrados);
   }, [premios, busqueda, filtroNivel, ordenar]);
+
+  const cargarDatosUsuario = async () => {
+    try {
+      const sessionId = localStorage.getItem('session_id');
+      if (!sessionId) {
+        router.push('/login');
+        return;
+      }
+
+      const response = await fetch('/api/auth/verify', {
+        headers: {
+          'Authorization': `Bearer ${sessionId}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setUsuario(data.usuario);
+      } else {
+        router.push('/login');
+      }
+    } catch (error) {
+      console.error('Error cargando usuario:', error);
+      router.push('/login');
+    }
+  };
+
+  const cargarPremios = async () => {
+    try {
+      const response = await fetch('/api/premios/publicos');
+      const data = await response.json();
+      
+      if (data.success) {
+        setPremios(data.premios);
+        
+        // Cargar premios ya canjeados
+        await cargarPremiosCanjeados();
+      }
+    } catch (error) {
+      console.error('Error cargando premios:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const cargarNivelesLealtad = async () => {
+    try {
+      const response = await fetch('/api/niveles');
+      const data = await response.json();
+      
+      if (data.success) {
+        setNivelesLealtad(data.niveles || []);
+      }
+    } catch (error) {
+      console.error('Error cargando niveles:', error);
+    }
+  };
+
+  const cargarPremiosCanjeados = async () => {
+    try {
+      const sessionId = localStorage.getItem('session_id');
+      if (!sessionId) return;
+
+      const response = await fetch('/api/premios/canjeados', {
+        headers: {
+          'Authorization': `Bearer ${sessionId}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const canjeadosSet = new Set<number>(data.premiosCanjeados?.map((p: any) => p.premio_id) || []);
+        setPremiosCanjeados(canjeadosSet);
+      }
+    } catch (error) {
+      console.error('Error cargando premios canjeados:', error);
+    }
+  };
 
   // Determinar nivel automáticamente según puntos usando niveles de la BD
   const getNivelAutomatico = (puntos: number): string => {
@@ -276,11 +293,10 @@ export default function PremiosPage() {
 
   // Verificar si el usuario puede canjear
   const puedeCanjear = (premio: Premio) => {
-    // 🎁 Validar puntos suficientes, stock y que no esté canjeado (aunque NO se descuenten)
     return usuario && 
            usuario.puntos >= premio.puntos_requeridos &&
            premio.stock > 0 &&
-           !premiosCanjeados.has(premio.id); // 🚫 No permitir duplicados
+           !premiosCanjeados.has(premio.id);
   };
 
   // Verificar si el premio ya fue canjeado
@@ -292,17 +308,11 @@ export default function PremiosPage() {
   const handleCanjear = async () => {
     if (!premioSeleccionado || !usuario) return;
 
-    console.log('🎁 Iniciando canje...');
-    console.log('💎 Puntos ANTES del canje:', usuario.puntos);
-    console.log('🏷️ Premio seleccionado:', premioSeleccionado.nombre);
-    console.log('💰 Puntos requeridos:', premioSeleccionado.puntos_requeridos);
-
     setCanjeando(true);
-    
+
     try {
       const sessionId = localStorage.getItem('session_id');
-      
-      const response = await fetch('/api/canjes', {
+      const response = await fetch('/api/premios/canjear', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -314,84 +324,62 @@ export default function PremiosPage() {
       });
 
       const data = await response.json();
-      console.log('📦 Respuesta del servidor:', data);
 
       if (response.ok) {
-        console.log('✅ Canje exitoso!');
-        console.log('💎 Puntos NO se descuentan. Mantiene:', data.puntos_restantes);
-        
-        alert(`🎉 ¡Canje exitoso!\n\nHas canjeado: ${premioSeleccionado.nombre}\n\n✨ Los puntos NO se descuentan\nTus puntos actuales: ${data.puntos_restantes}`);
+        // Actualizar UI
+        setPremiosCanjeados(prev => new Set<number>([...prev, premioSeleccionado.id]));
         setMostrarModal(false);
         
-        // Los puntos NO cambian, pero actualizamos por si acaso
-        setUsuario(prev => prev ? { ...prev, puntos: data.puntos_restantes } : null);
+        // Recargar datos del usuario
+        await cargarDatosUsuario();
         
-        // Marcar premio como canjeado
-        setPremiosCanjeados(prev => new Set(prev).add(premioSeleccionado.id));
-        
-        // Recargar premios para actualizar stock
-        setTimeout(() => window.location.reload(), 1500);
+        alert('¡Premio canjeado exitosamente!');
       } else {
-        console.error('❌ Error en el canje:', data);
-        alert(`❌ Error: ${data.error || data.mensaje || 'No se pudo completar el canje'}`);
+        alert(data.error || 'Error al canjear el premio');
       }
     } catch (error) {
-      console.error('Error al canjear:', error);
-      alert('Error al procesar el canje');
+      console.error('Error canjeando premio:', error);
+      alert('Error de conexión al canjear el premio');
     } finally {
       setCanjeando(false);
     }
   };
 
-  if (loading || !usuario) {
+  // Loading
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{backgroundColor: 'var(--main-bg)'}}>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black flex items-center justify-center">
         <div className="text-center">
-          <div className="relative">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-800 border-t-orange-500 mx-auto mb-4"></div>
-            <div className="absolute inset-0 animate-ping rounded-full h-16 w-16 border-4 border-orange-600 mx-auto opacity-20"></div>
-          </div>
-          <p className="font-medium" style={{color: 'var(--heading-text)'}}>Cargando catálogo...</p>
-          <p className="text-sm mt-2" style={{color: 'var(--muted-text)'}}>Preparando tus premios</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <p className="text-white text-xl">Cargando premios...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden transition-colors duration-300 p-4 md:p-8" style={{backgroundColor: 'var(--main-bg)', color: 'var(--main-text)'}}>
-      {/* Aurora Background Effects */}
+    <div className="min-h-screen relative overflow-hidden transition-colors duration-300" style={{backgroundColor: 'var(--main-bg)', color: 'var(--main-text)'}}>
+      {/* Animated Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        {tema === 'dark' ? (
-          <>
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-purple-600/10 rounded-full blur-3xl animate-pulse"></div>
-            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-indigo-500/8 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
-          </>
-        ) : (
-          <>
-            <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-purple-200/20 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-200/20 rounded-full blur-3xl"></div>
-          </>
-        )}
+        <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-br from-purple-600/20 to-blue-600/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 left-0 w-[800px] h-[800px] bg-gradient-to-tr from-blue-600/20 to-purple-600/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-indigo-500/15 to-purple-500/15 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '4s' }}></div>
       </div>
 
-      <div className="max-w-7xl mx-auto relative z-10">
-        {/* Header con Toggle de Tema y Navegación */}
-        <div className="flex justify-between items-center mb-6 fade-in-item">
-          <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-white/5 transition-all" style={{color: 'var(--muted-text)'}}>
+      <div className="max-w-7xl mx-auto relative z-10 p-6">
+        {/* Header */}
+        <div className="flex justify-between items-center mb-8">
+          <Link href="/dashboard" className="flex items-center gap-3 px-6 py-3 rounded-2xl hover:bg-white/10 transition-all duration-300 backdrop-blur-sm" style={{backgroundColor: 'var(--card-bg)', color: 'var(--muted-text)'}}>
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            <span>Volver</span>
+            <span className="font-medium">Volver</span>
           </Link>
 
-          {/* Toggle de tema */}
           <button
             onClick={toggleTema}
-            className="p-3 rounded-xl transition-all duration-300 hover:scale-110"
+            className="p-3 rounded-2xl transition-all duration-300 hover:scale-110 backdrop-blur-sm"
             style={{backgroundColor: 'var(--card-bg)', color: 'var(--heading-text)'}}
-            aria-label="Cambiar tema"
           >
             {tema === 'dark' ? (
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -405,325 +393,299 @@ export default function PremiosPage() {
           </button>
         </div>
 
-        {/* Header Principal con Info del Usuario */}
-        <div className="glassmorphism-light fade-in-item relative rounded-2xl p-6 mb-6 shadow-xl transition-all duration-500 overflow-hidden group border-l-4" style={{borderLeftColor: 'var(--accent-amber)'}}>
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full animate-[shimmer_3s_infinite] pointer-events-none"></div>
-          <div className="flex flex-col lg:flex-row justify-between items-center gap-6 relative z-10">
-            <div>
-              <h1 className="text-3xl md:text-4xl font-black mb-2 tracking-tight" style={{color: 'var(--heading-text)'}}>
-                🎁 Catálogo de Premios
-              </h1>
-              <p style={{color: 'var(--muted-text)'}}>Descubre qué podés obtener con tus puntos</p>
-            </div>
-            
-            {/* Puntos del usuario */}
-            <div className="glassmorphism rounded-2xl px-6 py-4 border" style={{borderColor: 'var(--card-border)'}}>
-              <p className="text-sm mb-1" style={{color: 'var(--muted-text)'}}>Tus Puntos Disponibles</p>
-              <div className="flex items-center gap-2">
-                <span className="text-3xl font-black" style={{color: 'var(--accent-amber)'}} title={`Puntos: ${usuario.puntos || 0}`}>
-                  {(usuario.puntos || 0).toLocaleString()}
-                </span>
-                <span style={{color: 'var(--muted-text)'}}>pts</span>
+        {/* User Info Card */}
+        <div className={`rounded-3xl p-8 mb-8 shadow-2xl backdrop-blur-md transition-all duration-500 ${getBorderColorUsuario()}`}>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <div className={`w-20 h-20 rounded-2xl bg-gradient-to-br ${getIconColorUsuario()} flex items-center justify-center text-white text-2xl font-bold shadow-lg ring-2`}>
+                {usuario?.nombre_completo?.charAt(0).toUpperCase()}
               </div>
-              <p className="text-xs mt-1" style={{color: 'var(--muted-text)'}}>
-                Nivel: {getNivelAutomatico(usuario.puntos || 0)}
-              </p>
+              <div>
+                <h2 className="text-3xl font-bold mb-2" style={{color: 'var(--heading-text)'}}>
+                  {usuario?.nombre_completo}
+                </h2>
+                <div className="flex items-center gap-4">
+                  <span className="px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-500 text-white">
+                    Nivel {getNivelAutomatico(usuario?.puntos || 0)}
+                  </span>
+                  <span style={{color: 'var(--muted-text)'}} className="text-sm">
+                    {usuario?.email}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-5xl font-bold bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent mb-2">
+                {usuario?.puntos?.toLocaleString() || 0}
+              </div>
+              <div style={{color: 'var(--muted-text)'}} className="text-sm">
+                Puntos disponibles
+              </div>
+              <div className="text-lg font-semibold mt-1" style={{color: 'var(--heading-text)'}}>
+                {formatearPesos(usuario?.puntos || 0)}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Filtros y búsqueda */}
-        <div className="glassmorphism-light fade-in-item relative rounded-2xl p-6 mb-6 shadow-xl" style={{animationDelay: '0.1s'}}>
-          <div className="space-y-4">
-            {/* Búsqueda */}
-            <div className="relative">
+        {/* Title */}
+        <div className="text-center mb-10">
+          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+            🎁 Catálogo de Premios
+          </h1>
+          <p style={{color: 'var(--muted-text)'}} className="text-xl">
+            Canjea tus puntos por productos exclusivos
+          </p>
+        </div>
+
+        {/* Filters */}
+        <div className="backdrop-blur-md rounded-2xl p-6 mb-8 shadow-xl" style={{backgroundColor: 'var(--card-bg)'}}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Search */}
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: 'var(--heading-text)'}}>
+                🔍 Buscar premios
+              </label>
               <input
                 type="text"
-                placeholder="Buscar premios..."
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                className="input-nexus w-full pl-12"
+                placeholder="Buscar por nombre o descripción..."
+                className="w-full px-4 py-3 rounded-xl border transition-all duration-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                style={{
+                  backgroundColor: tema === 'dark' ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+                  borderColor: tema === 'dark' ? 'rgba(148, 163, 184, 0.2)' : 'rgba(100, 116, 139, 0.2)',
+                  color: 'var(--main-text)'
+                }}
               />
-              <svg className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2" style={{color: 'var(--muted-text)'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
             </div>
 
-            {/* Filtros y ordenamiento */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              {/* Filtro por nivel */}
-              <div className="flex-1">
-                <label className="label-nexus">Filtrar por nivel</label>
-                <select
-                  value={filtroNivel}
-                  onChange={(e) => setFiltroNivel(e.target.value as any)}
-                  className="input-nexus w-full"
-                >
-                  <option value="todos">Todos los niveles</option>
-                  <option value="bronce"> Bronce (menos de 10k pts)</option>
-                  <option value="plata"> Plata (10k - 20k pts)</option>
-                  <option value="oro"> Oro (más de 20k pts)</option>
-                </select>
-              </div>
-
-              {/* Ordenar */}
-              <div className="flex-1">
-                <label className="label-nexus">Ordenar por</label>
-                <select
-                  value={ordenar}
-                  onChange={(e) => setOrdenar(e.target.value as any)}
-                  className="input-nexus w-full"
-                >
-                  <option value="puntos_asc">Puntos (menor a mayor)</option>
-                  <option value="puntos_desc">Puntos (mayor a menor)</option>
-                  <option value="nombre">Nombre (A-Z)</option>
-                </select>
-              </div>
+            {/* Level Filter */}
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: 'var(--heading-text)'}}>
+                🏆 Filtrar por nivel
+              </label>
+              <select
+                value={filtroNivel}
+                onChange={(e) => setFiltroNivel(e.target.value as any)}
+                className="w-full px-4 py-3 rounded-xl border transition-all duration-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                style={{
+                  backgroundColor: tema === 'dark' ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+                  borderColor: tema === 'dark' ? 'rgba(148, 163, 184, 0.2)' : 'rgba(100, 116, 139, 0.2)',
+                  color: 'var(--main-text)'
+                }}
+              >
+                <option value="todos">Todos los niveles</option>
+                <option value="bronce">🥉 Bronce</option>
+                <option value="plata">🥈 Plata</option>
+                <option value="oro">🥇 Oro</option>
+              </select>
             </div>
 
-            {/* Contador de resultados */}
-            <div className="text-sm" style={{color: 'var(--muted-text)'}}>
-              Mostrando {premiosFiltrados.length} de {premios.length} premios
+            {/* Sort */}
+            <div>
+              <label className="block text-sm font-medium mb-2" style={{color: 'var(--heading-text)'}}>
+                📊 Ordenar por
+              </label>
+              <select
+                value={ordenar}
+                onChange={(e) => setOrdenar(e.target.value as any)}
+                className="w-full px-4 py-3 rounded-xl border transition-all duration-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                style={{
+                  backgroundColor: tema === 'dark' ? 'rgba(30, 41, 59, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+                  borderColor: tema === 'dark' ? 'rgba(148, 163, 184, 0.2)' : 'rgba(100, 116, 139, 0.2)',
+                  color: 'var(--main-text)'
+                }}
+              >
+                <option value="puntos_asc">Menor puntos</option>
+                <option value="puntos_desc">Mayor puntos</option>
+                <option value="nombre">Alfabético</option>
+              </select>
             </div>
           </div>
         </div>
 
-        {/* Grid de premios */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {premiosFiltrados.map((premio) => {
-            const colorNivel = getColorNivel(premio.puntos_requeridos);
-            const emojiNivel = getEmojiNivel(premio.puntos_requeridos);
-            const nombreNivel = getNombreNivel(premio.puntos_requeridos);
-            const canCanjear = puedeCanjear(premio);
-            const esAdmin = ['ADMIN', 'SUPERADMIN'].includes(usuario.rol?.toUpperCase() || '');
-            const estaDesbloqueado = canCanjear || esAdmin;
-
-            return (
-              <div
-                key={premio.id}
-                className={`prize-card glassmorphism-light relative border-2 rounded-xl p-4 transition-all duration-400 overflow-hidden shadow-lg fade-in-item ${
-                  estaDesbloqueado 
-                    ? getBorderColorUsuario()
-                    : tema === 'dark'
-                    ? 'border-gray-700/50 bg-gradient-to-br from-gray-900/40 to-gray-800/30 hover:border-gray-600'
-                    : 'border-gray-300/50 bg-gradient-to-br from-gray-50/80 to-gray-100/60 hover:border-gray-400'
-                }`}
-                style={{animationDelay: `${Math.min(0.6, premio.id * 0.1)}s`}}
-              >
-                {/* Imagen del premio */}
-                <div className="relative h-48 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
-                  {premio.imagen_url ? (
-                    <img 
-                      src={premio.imagen_url} 
-                      alt={premio.nombre}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="text-6xl">{emojiNivel}</div>
-                  )}
-                  
-                  {/* Badge de nivel */}
-                  <div className={`absolute top-4 right-4 px-3 py-1 rounded-full bg-gradient-to-r ${colorNivel} text-white text-sm font-bold shadow-lg`}>
-                    {emojiNivel} {nombreNivel}
-                  </div>
-
-                  {/* Badge de stock */}
-                  {premio.stock === 0 && (
-                    <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-red-500 text-white text-sm font-bold shadow-lg">
-                      ⚠️ Agotado
-                    </div>
-                  )}
-                  
-                  {/* Badge de ya canjeado */}
-                  {yaCanjeado(premio.id) && (
-                    <div className="absolute top-4 left-4 px-3 py-1 rounded-full bg-green-600 text-white text-sm font-bold shadow-lg">
-                      ✅ Ya Canjeado
-                    </div>
-                  )}
-                </div>
-
-                {/* Contenido */}
-                <div className="flex-1 flex flex-col mt-3">
-                  <div className="flex items-center justify-center mb-2">
-                    <div className={`w-14 h-14 rounded-full flex items-center justify-center transition-all duration-500 ring-2 shadow-lg ${
-                      estaDesbloqueado 
-                        ? `bg-gradient-to-br ${getIconColorUsuario()}`
-                        : tema === 'dark' ? 'bg-gray-700 ring-gray-800' : 'bg-gray-300 ring-gray-400'
-                    }`}>
-                      {estaDesbloqueado ? (
-                        <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z" />
-                        </svg>
-                      ) : (
-                        <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" style={{color: tema === 'dark' ? 'rgb(107, 114, 128)' : 'rgb(156, 163, 175)'}}>
-                          <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </div>
-                  </div>
-                  <h3 className="text-center font-bold text-sm mb-1 leading-tight" style={{color: estaDesbloqueado ? 'var(--heading-text)' : 'var(--muted-text)'}}>
-                    {premio.nombre}
-                  </h3>
-                  <p className="text-center text-xs mb-2 line-clamp-2 flex-1" style={{color: 'var(--muted-text)'}}>
-                    {premio.descripcion}
-                  </p>
-
-                  <div className="border-t pt-2 mt-1" style={{borderColor: 'var(--card-border)'}}></div>
-
-                  {/* Puntos requeridos */}
-                  <div className="text-center space-y-1">
-                    <div className="flex items-center justify-center gap-1.5" style={{color: estaDesbloqueado ? 'var(--accent-amber)' : 'var(--muted-text)'}}>
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clipRule="evenodd" />
-                      </svg>
-                      <span className="text-xl font-bold">{premio.puntos_requeridos.toLocaleString()}</span>
-                    </div>
-                  </div>
-
-                  {/* Estado del usuario */}
-                  {yaCanjeado(premio.id) ? (
-                    <div className="mb-3 text-sm text-green-400 flex items-center gap-2">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      ✅ Ya canjeaste este premio
-                    </div>
-                  ) : canCanjear ? (
-                    <div className="mb-3 text-sm text-green-400 flex items-center gap-2">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                      </svg>
-                      ¡Podés canjearlo! ✨ Los puntos NO se descuentan
-                    </div>
-                  ) : premio.stock === 0 ? (
-                    <div className="mb-3 text-sm text-red-400 flex items-center gap-2">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                      </svg>
-                      Sin stock disponible
-                    </div>
-                  ) : (
-                    <div className="mb-3 text-sm text-orange-400 flex items-center gap-2">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                      </svg>
-                      Te faltan {(premio.puntos_requeridos - (usuario.puntos || 0)).toLocaleString()} pts
-                    </div>
-                  )}
-
-                  {/* Mensaje de estado */}
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-center mb-2 mt-2" style={{color: estaDesbloqueado ? 'var(--accent-green)' : 'var(--muted-text)'}}>
-                    {yaCanjeado(premio.id)
-                      ? '✓ YA CANJEADO'
-                      : estaDesbloqueado
-                      ? '✓ DISPONIBLE'
-                      : premio.stock === 0
-                      ? '⚠ SIN STOCK'
-                      : `FALTAN ${(premio.puntos_requeridos - (usuario.puntos || 0)).toLocaleString()} PTS`}
-                  </p>
-
-                  {/* Botón de canje */}
-                  <button
-                    onClick={() => {
-                      setPremioSeleccionado(premio);
-                      setMostrarModal(true);
-                    }}
-                    disabled={!canCanjear || yaCanjeado(premio.id)}
-                    className={`btn-nexus w-full py-2.5 rounded-xl font-bold transition-all duration-300 ${
-                      canCanjear && !yaCanjeado(premio.id)
-                        ? 'hover:scale-105'
-                        : 'opacity-50 cursor-not-allowed'
-                    }`}
-                    style={{
-                      backgroundColor: canCanjear && !yaCanjeado(premio.id) ? 'var(--accent-amber)' : 'var(--input-bg)',
-                      color: canCanjear && !yaCanjeado(premio.id) ? '#fff' : 'var(--muted-text)'
-                    }}
-                  >
-                    {yaCanjeado(premio.id) 
-                      ? '✅ Ya Canjeado' 
-                      : canCanjear 
-                      ? '🎁 Canjear Ahora' 
-                      : premio.stock === 0 
-                      ? '⚠️ Agotado' 
-                      : '🔒 Insuficiente'}
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+        {/* Results */}
+        <div className="mb-6 flex items-center justify-between">
+          <p style={{color: 'var(--muted-text)'}} className="text-lg">
+            Se encontraron <span className="font-bold" style={{color: 'var(--heading-text)'}}>{premiosFiltrados.length}</span> premios
+          </p>
         </div>
 
-        {/* Sin resultados */}
-        {premiosFiltrados.length === 0 && (
-          <div className="glassmorphism-light rounded-2xl p-16 text-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-purple-500/20 to-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-10 h-10" style={{color: 'var(--muted-text)'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+        {/* Premios Grid */}
+        {premiosFiltrados.length === 0 ? (
+          <div className="text-center py-20">
+            <div className="text-6xl mb-4">🎁</div>
+            <h3 className="text-2xl font-bold mb-2" style={{color: 'var(--heading-text)'}}>
+              No se encontraron premios
+            </h3>
+            <p style={{color: 'var(--muted-text)'}}>
+              Intenta ajustar los filtros de búsqueda
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {premiosFiltrados.map((premio) => {
+              const puedeCanjearPremio = puedeCanjear(premio);
+              const yaFueCanjeado = yaCanjeado(premio.id);
+              
+              return (
+                <div
+                  key={premio.id}
+                  className={`group relative rounded-2xl overflow-hidden shadow-xl transition-all duration-500 hover:scale-105 hover:shadow-2xl ${
+                    yaFueCanjeado 
+                      ? 'opacity-75' 
+                      : puedeCanjearPremio 
+                        ? 'ring-2 ring-green-500/50 hover:ring-green-500/70' 
+                        : 'opacity-90'
+                  }`}
+                  style={{
+                    backgroundColor: tema === 'dark' ? 'rgba(30, 41, 59, 0.9)' : 'rgba(255, 255, 255, 0.95)',
+                    border: yaFueCanjeado ? '2px solid #ef4444' : puedeCanjearPremio ? '2px solid #10b981' : '1px solid rgba(148, 163, 184, 0.2)'
+                  }}
+                >
+                  {/* Level Badge */}
+                  <div className={`absolute top-4 right-4 px-3 py-1 rounded-full text-white text-xs font-bold bg-gradient-to-r ${getColorNivel(premio.puntos_requeridos)} z-10`}>
+                    {getEmojiNivel(premio.puntos_requeridos)} {getNombreNivel(premio.puntos_requeridos)}
+                  </div>
+
+                  {/* Status Badge */}
+                  {yaFueCanjeado && (
+                    <div className="absolute top-4 left-4 px-3 py-1 rounded-full text-white text-xs font-bold bg-red-500 z-10">
+                      ✅ Ya canjeado
+                    </div>
+                  )}
+
+                  {/* Image */}
+                  <div className="h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center relative overflow-hidden">
+                    {premio.imagen_url ? (
+                      <img 
+                        src={premio.imagen_url} 
+                        alt={premio.nombre}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                    ) : (
+                      <div className="text-6xl opacity-50">🎁</div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold mb-3" style={{color: 'var(--heading-text)'}}>
+                      {premio.nombre}
+                    </h3>
+                    
+                    <p className="mb-4 line-clamp-2" style={{color: 'var(--muted-text)'}}>
+                      {premio.descripcion}
+                    </p>
+
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <div className="text-2xl font-bold text-purple-600">
+                          {premio.puntos_requeridos.toLocaleString()} pts
+                        </div>
+                        <div className="text-sm" style={{color: 'var(--muted-text)'}}>
+                          {formatearPesos(premio.puntos_requeridos)}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-medium" style={{color: 'var(--muted-text)'}}>
+                          Stock
+                        </div>
+                        <div className={`text-lg font-bold ${premio.stock > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          {premio.stock}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Button */}
+                    <button
+                      onClick={() => {
+                        if (yaFueCanjeado) return;
+                        if (!puedeCanjearPremio) {
+                          alert('No tienes puntos suficientes para este premio');
+                          return;
+                        }
+                        setPremioSeleccionado(premio);
+                        setMostrarModal(true);
+                      }}
+                      disabled={yaFueCanjeado || !puedeCanjearPremio}
+                      className={`w-full py-3 rounded-xl font-bold transition-all duration-300 ${
+                        yaFueCanjeado 
+                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                          : puedeCanjearPremio 
+                            ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white hover:from-green-600 hover:to-emerald-600 transform hover:scale-105 shadow-lg'
+                            : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      }`}
+                    >
+                      {yaFueCanjeado ? 'Ya canjeado' : puedeCanjearPremio ? 'Canjear ahora' : 'Puntos insuficientes'}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Modal */}
+        {mostrarModal && premioSeleccionado && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-6">
+            <div className="backdrop-blur-md rounded-3xl p-8 max-w-md w-full shadow-2xl" style={{backgroundColor: 'var(--card-bg)'}}>
+              <h3 className="text-2xl font-bold mb-4" style={{color: 'var(--heading-text)'}}>
+                Confirmar Canje
+              </h3>
+              
+              <div className="mb-6">
+                <h4 className="text-lg font-semibold mb-2" style={{color: 'var(--heading-text)'}}>
+                  {premioSeleccionado.nombre}
+                </h4>
+                <p style={{color: 'var(--muted-text)'}} className="mb-4">
+                  {premioSeleccionado.descripcion}
+                </p>
+                
+                <div className="flex justify-between items-center p-4 rounded-xl" style={{backgroundColor: tema === 'dark' ? 'rgba(30, 41, 59, 0.5)' : 'rgba(0, 0, 0, 0.05)'}}>
+                  <span style={{color: 'var(--muted-text)'}}>Costo:</span>
+                  <span className="text-xl font-bold text-purple-600">
+                    {premioSeleccionado.puntos_requeridos.toLocaleString()} pts
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center p-4 rounded-xl mt-2" style={{backgroundColor: tema === 'dark' ? 'rgba(30, 41, 59, 0.5)' : 'rgba(0, 0, 0, 0.05)'}}>
+                  <span style={{color: 'var(--muted-text)'}}>Tus puntos:</span>
+                  <span className="text-xl font-bold text-green-600">
+                    {usuario?.puntos?.toLocaleString()} pts
+                  </span>
+                </div>
+                
+                <div className="flex justify-between items-center p-4 rounded-xl mt-2" style={{backgroundColor: tema === 'dark' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(16, 185, 129, 0.1)'}}>
+                  <span style={{color: 'var(--muted-text)'}}>Puntos restantes:</span>
+                  <span className="text-xl font-bold text-green-600">
+                    {(usuario?.puntos || 0) - premioSeleccionado.puntos_requeridos} pts
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex gap-4">
+                <button
+                  onClick={() => setMostrarModal(false)}
+                  className="flex-1 py-3 rounded-xl font-semibold transition-all duration-300 hover:bg-gray-200"
+                  style={{backgroundColor: tema === 'dark' ? 'rgba(148, 163, 184, 0.2)' : 'rgba(0, 0, 0, 0.1)', color: 'var(--main-text)'}}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleCanjear}
+                  disabled={canjeando}
+                  className="flex-1 py-3 rounded-xl font-semibold text-white transition-all duration-300 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:opacity-50"
+                >
+                  {canjeando ? 'Canjeando...' : 'Confirmar Canje'}
+                </button>
+              </div>
             </div>
-            <h3 className="text-xl font-bold mb-2" style={{color: 'var(--heading-text)'}}>No se encontraron premios</h3>
-            <p className="text-sm" style={{color: 'var(--muted-text)'}}>Intenta ajustar los filtros de búsqueda</p>
           </div>
         )}
       </div>
-
-      {/* Modal de confirmación */}
-      {mostrarModal && premioSeleccionado && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="glassmorphism-light rounded-2xl border max-w-md w-full p-8" style={{borderColor: 'var(--card-border)'}}>
-            <h3 className="text-2xl font-bold mb-4" style={{color: 'var(--heading-text)'}}>Confirmar Canje</h3>
-            
-            <div className="mb-6">
-              <p className="mb-4" style={{color: 'var(--muted-text)'}}>¿Estás seguro que querés canjear:</p>
-              <div className="glassmorphism rounded-xl p-4 border" style={{borderColor: 'var(--card-border)'}}>
-                <p className="font-bold text-lg mb-3" style={{color: 'var(--heading-text)'}}>{premioSeleccionado.nombre}</p>
-                <div className="space-y-2 mb-3">
-                  <div className="flex justify-between text-sm">
-                    <span style={{color: 'var(--muted-text)'}}>Puntos requeridos:</span>
-                    <span className="font-bold" style={{color: 'var(--accent-amber)'}}>{premioSeleccionado.puntos_requeridos.toLocaleString()} pts</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span style={{color: 'var(--muted-text)'}}>Tus puntos actuales:</span>
-                    <span className="font-bold" style={{color: 'var(--accent-green)'}}>{(usuario.puntos || 0).toLocaleString()} pts</span>
-                  </div>
-                </div>
-                <div className="border rounded-lg p-3 mt-3" style={{
-                  backgroundColor: tema === 'dark' ? 'rgba(139, 92, 246, 0.1)' : 'rgba(139, 92, 246, 0.05)',
-                  borderColor: tema === 'dark' ? 'rgba(139, 92, 246, 0.3)' : 'rgba(139, 92, 246, 0.2)'
-                }}>
-                  <div className="flex items-center gap-2">
-                    <span className="text-2xl">✨</span>
-                    <div className="flex-1">
-                      <p className="text-sm font-bold" style={{color: 'var(--accent-purple)'}}>Los puntos NO se descuentan</p>
-                      <p className="text-xs mt-1" style={{color: 'var(--muted-text)'}}>Después del canje seguirás teniendo {(usuario.puntos || 0).toLocaleString()} pts</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => setMostrarModal(false)}
-                disabled={canjeando}
-                className="btn-nexus flex-1 py-3 rounded-xl font-bold transition-colors"
-                style={{backgroundColor: 'var(--input-bg)', color: 'var(--muted-text)'}}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleCanjear}
-                disabled={canjeando}
-                className="btn-nexus flex-1 py-3 rounded-xl font-bold transition-all disabled:opacity-50"
-                style={{backgroundColor: 'var(--accent-amber)', color: '#fff'}}
-              >
-                {canjeando ? 'Canjeando...' : 'Confirmar Canje'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
