@@ -4,43 +4,45 @@
  */
 
 import { NextResponse } from 'next/server';
-import mysql from 'mysql2/promise';
-
-// Configuración de la conexión a MySQL
-const dbConfig = {
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'laboratorio3d',
-  port: parseInt(process.env.DB_PORT || '3306')
-};
+import { prisma } from '@/lib/prisma-client';
 
 export async function GET() {
-  let connection;
-  
   try {
-    connection = await mysql.createConnection(dbConfig);
+    // Obtener niveles activos ordenados usando Prisma
+    const niveles = await prisma.nivelLealtad.findMany({
+      where: {
+        activo: true
+      },
+      orderBy: {
+        puntosMinimosRequeridos: 'asc'
+      },
+      select: {
+        id: true,
+        nombreNivel: true,
+        iconoNivel: true,
+        puntosMinimosRequeridos: true,
+        multiplicadorPuntos: true,
+        descripcion: true,
+        orden: true
+      }
+    });
 
-    // Obtener niveles activos ordenados
-    const [niveles]: any = await connection.execute(
-      `SELECT 
-        id,
-        nombre_nivel as nombre,
-        icono_nivel as icono,
-        puntos_minimos_requeridos as puntos_requeridos,
-        multiplicador_puntos as multiplicador,
-        descripcion,
-        orden
-      FROM niveles_lealtad 
-      WHERE activo = 1
-      ORDER BY puntos_minimos_requeridos ASC`
-    );
+    // Mapear a formato esperado
+    const nivelesFormateados = niveles.map(nivel => ({
+      id: nivel.id,
+      nombre: nivel.nombreNivel,
+      icono: nivel.iconoNivel,
+      puntos_requeridos: nivel.puntosMinimosRequeridos,
+      multiplicador: nivel.multiplicadorPuntos,
+      descripcion: nivel.descripcion,
+      orden: nivel.orden
+    }));
 
-    console.log(`📊 Se obtuvieron ${niveles.length} niveles de lealtad`);
+    console.log(`📊 Se obtuvieron ${nivelesFormateados.length} niveles de lealtad`);
 
     return NextResponse.json({
       success: true,
-      niveles: niveles
+      niveles: nivelesFormateados
     });
 
   } catch (error: any) {
@@ -49,9 +51,5 @@ export async function GET() {
       { error: error.message || 'Error interno del servidor' },
       { status: 500 }
     );
-  } finally {
-    if (connection) {
-      await connection.end();
-    }
   }
 }

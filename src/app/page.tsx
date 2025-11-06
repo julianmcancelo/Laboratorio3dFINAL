@@ -30,19 +30,19 @@ export default function Home() {
   useEffect(() => {
     const cargarPremios = async () => {
       try {
-        console.log('🎁 Cargando premios...');
+        console.log('Cargando premios...');
         const response = await fetch('/api/premios/publicos');
-        console.log('📡 Response status:', response.status);
+        console.log('Response status:', response.status);
         const data = await response.json();
-        console.log('📦 Data recibida:', data);
-        console.log('✅ Premios:', data.premios);
-        console.log('📊 Total premios:', data.premios?.length || 0);
+        console.log('Data recibida:', data);
+        console.log('Premios:', data.premios);
+        console.log('Total premios:', data.premios?.length || 0);
         
         if (data.success) {
           setPremios(data.premios);
         }
       } catch (error) {
-        console.error('❌ Error al cargar premios:', error);
+        console.error('Error al cargar premios:', error);
       } finally {
         setLoadingPremios(false);
       }
@@ -56,13 +56,6 @@ export default function Home() {
     if (puntos >= 20000) return 'from-[#FFD700] to-[#D4AF37]'; // Oro
     if (puntos >= 10000) return 'from-[#C0C0C0] to-[#A8A8A8]'; // Plata
     return 'from-[#CD7F32] to-[#B87333]'; // Bronce
-  };
-
-  // Determinar el emoji del nivel
-  const getEmojiNivel = (puntos: number) => {
-    if (puntos >= 20000) return '🥇'; // Oro
-    if (puntos >= 10000) return '🥈'; // Plata
-    return '🥉'; // Bronce
   };
 
   // Determinar el nombre del nivel
@@ -116,17 +109,29 @@ export default function Home() {
             {/* Indicadores de beneficios */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-4xl mx-auto">
               <div className="flex flex-col items-center p-6 rounded-2xl backdrop-blur-sm bg-white/5 border border-white/10">
-                <div className="text-4xl mb-3">🎁</div>
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-3">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                  </svg>
+                </div>
                 <h3 className="font-bold text-lg mb-2 text-white">500 Puntos</h3>
                 <p className="text-sm text-[#a0a0a0] text-center">de bienvenida = $500.000</p>
               </div>
               <div className="flex flex-col items-center p-6 rounded-2xl backdrop-blur-sm bg-white/5 border border-white/10">
-                <div className="text-4xl mb-3">⚡</div>
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center mb-3">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
                 <h3 className="font-bold text-lg mb-2 text-white">Registro Rápido</h3>
                 <p className="text-sm text-[#a0a0a0] text-center">en menos de 2 minutos</p>
               </div>
               <div className="flex flex-col items-center p-6 rounded-2xl backdrop-blur-sm bg-white/5 border border-white/10">
-                <div className="text-4xl mb-3">🏆</div>
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center mb-3">
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                  </svg>
+                </div>
                 <h3 className="font-bold text-lg mb-2 text-white">Premios Exclusivos</h3>
                 <p className="text-sm text-[#a0a0a0] text-center">hasta impresoras 3D</p>
               </div>
@@ -176,7 +181,7 @@ export default function Home() {
         <section id="niveles" className="mb-20">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-6 text-white">
-              🏆 Tu Carrera de Recompensas
+              Tu Carrera de Recompensas
             </h2>
             <p className="text-xl sm:text-2xl mb-4 text-white font-bold">
               Programa de Puntos Laboratorio 3D
@@ -198,7 +203,7 @@ export default function Home() {
               ) : premios.length === 0 ? (
                 // Sin premios
                 <div className="text-center py-12 bg-red-500/10 border border-red-500 rounded-xl p-6">
-                  <p className="text-red-400 text-xl font-bold mb-2">⚠️ No hay premios disponibles</p>
+                  <p className="text-red-400 text-xl font-bold mb-2">No hay premios disponibles</p>
                   <p className="text-gray-400 text-sm">Total premios cargados: {premios.length}</p>
                   <p className="text-gray-500 text-xs mt-2">Abre la consola (F12) para ver los logs</p>
                 </div>
@@ -206,7 +211,6 @@ export default function Home() {
                 // Renderizar premios dinámicamente
                 premios.map((premio) => {
                   const colorNivel = getColorNivel(premio.puntos_requeridos);
-                  const emojiNivel = getEmojiNivel(premio.puntos_requeridos);
                   const nombreNivel = getNombreNivel(premio.puntos_requeridos);
                   const colorTexto = premio.puntos_requeridos >= 20000 ? 'yellow' : 
                                      premio.puntos_requeridos >= 10000 ? 'gray' : 'orange';
@@ -219,7 +223,7 @@ export default function Home() {
                       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                         <div className="flex-1">
                           <h3 className="text-lg sm:text-xl font-bold mb-1">
-                            {emojiNivel} Nivel {nombreNivel}
+                            Nivel {nombreNivel}
                           </h3>
                           <p className={`text-${colorTexto}-100 text-sm sm:text-base`}>
                             {premio.nombre}
@@ -248,7 +252,7 @@ export default function Home() {
             {/* Cómo Funciona */}
             <div className="bg-[#2a2a2a] rounded-2xl p-8 border border-white/10">
               <h3 className="text-2xl font-bold text-white mb-6">
-                🔥 ¿Cómo funciona?
+                ¿Cómo funciona?
               </h3>
               
               <div className="space-y-6">
@@ -257,7 +261,7 @@ export default function Home() {
                     1
                   </div>
                   <div>
-                    <h4 className="font-bold text-white mb-1">📝 Registrate y Comprá</h4>
+                    <h4 className="font-bold text-white mb-1">Registrate y Comprá</h4>
                     <p className="text-[#a0a0a0] text-sm">
                       Por cada $1.000 que gastes en Laboratorio 3D, sumás 1 punto automáticamente
                     </p>
@@ -269,7 +273,7 @@ export default function Home() {
                     2
                   </div>
                   <div>
-                    <h4 className="font-bold text-white mb-1">💰 Cargá tu compra</h4>
+                    <h4 className="font-bold text-white mb-1">Cargá tu compra</h4>
                     <p className="text-[#a0a0a0] text-sm">
                       Subí foto de tu comprobante y nosotros verificamos y acreditamos tus puntos en 48 hs
                     </p>
@@ -281,7 +285,7 @@ export default function Home() {
                     3
                   </div>
                   <div>
-                    <h4 className="font-bold text-white mb-1">🎁 Canjeá premios</h4>
+                    <h4 className="font-bold text-white mb-1">Canjeá premios</h4>
                     <p className="text-[#a0a0a0] text-sm">
                       Elegí tu premio del catálogo y retiralo en nuestro local o pedí envío
                     </p>
@@ -293,7 +297,7 @@ export default function Home() {
                     4
                   </div>
                   <div>
-                    <h4 className="font-bold text-white mb-1">📊 Subí de nivel</h4>
+                    <h4 className="font-bold text-white mb-1">Subí de nivel</h4>
                     <p className="text-[#a0a0a0] text-sm">
                       Mientras más comprás, más subís de nivel y desbloqueás mejores premios
                     </p>
@@ -305,7 +309,7 @@ export default function Home() {
                     5
                   </div>
                   <div>
-                    <h4 className="font-bold text-white mb-1">👥 Referí amigos</h4>
+                    <h4 className="font-bold text-white mb-1">Referí amigos</h4>
                     <p className="text-[#a0a0a0] text-sm">
                       Compartí tu código y ganá 50 pts ($50.000) por cada compra {'>'}$500k. Tu amigo recibe $25.000 de descuento
                     </p>
@@ -320,7 +324,6 @@ export default function Home() {
         <section className="text-center mb-20">
           <div className="relative overflow-hidden rounded-3xl p-16 bg-gradient-to-br from-purple-600 to-pink-600">
             <div className="relative z-10">
-              <div className="text-6xl mb-4">🎯</div>
               <h2 className="text-4xl sm:text-5xl font-bold mb-6 text-white">
                 ¡Tu Momento es Ahora!
               </h2>
@@ -378,7 +381,7 @@ export default function Home() {
             </div>
             
             <div>
-              <h4 className="text-white font-bold mb-4">📸 Síguenos</h4>
+              <h4 className="text-white font-bold mb-4">Síguenos</h4>
               <ul className="space-y-2">
                 <li>
                   <a 

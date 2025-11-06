@@ -39,6 +39,9 @@ const inter = Inter({
 // ============================================================================
 
 export const metadata: Metadata = {
+  // Base URL para resolver rutas relativas en metadatos
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  
   // Metadatos básicos
   title: {
     default: 'Laboratorio 3D - Sistema de Premios y Lealtad',
@@ -121,20 +124,25 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
   manifest: '/site.webmanifest',
-  
-  // Color del tema para navegadores móviles
+};
+
+// ============================================================================
+// 🖥️ CONFIGURACIÓN DE VIEWPORT
+// ============================================================================
+
+/**
+ * Configuración del viewport y tema
+ * En Next.js 14+, viewport y themeColor se exportan por separado
+ */
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#8b5cf6' },
     { media: '(prefers-color-scheme: dark)', color: '#7c3aed' }
   ],
-  
-  // Viewport y otras configuraciones
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
 };
 
 // ============================================================================

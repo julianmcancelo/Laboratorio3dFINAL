@@ -1,5 +1,5 @@
 /**
- * 🎯 Mi Portal de Lealtad - Laboratorio 3D
+ * Mi Portal de Lealtad - Laboratorio 3D
  * 
  * Dashboard con estética dark/naranja:
  * - Tema oscuro profesional
