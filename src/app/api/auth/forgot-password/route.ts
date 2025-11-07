@@ -2,6 +2,82 @@ import { NextRequest, NextResponse } from 'next/server';
 import mysql from 'mysql2/promise';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
+import QRCode from 'qrcode';
+import fs from 'fs';
+import path from 'path';
+
+// Helper functions
+function generateResetToken(): string {
+  return crypto.randomBytes(32).toString('hex');
+}
+
+function generateResetLink(token: string, email: string): string {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const encodedEmail = encodeURIComponent(email);
+  return `${baseUrl}/reset-password?token=${token}&email=${encodedEmail}`;
+}
+
+async function generateQRCodeDataURL(text: string): Promise<string> {
+  return await QRCode.toDataURL(text, {
+    width: 100,
+    margin: 1,
+    color: {
+      dark: '#000000',
+      light: '#FFFFFF'
+    }
+  });
+}
+
+function prepareEmailTemplate(email: string, nombre?: string, requestInfo?: {
+  ip?: string;
+  userAgent?: string;
+  date?: string;
+}) {
+  const token = generateResetToken();
+  const resetLink = generateResetLink(token, email);
+  
+  return {
+    token,
+    resetLink,
+    nombre: nombre || email.split('@')[0],
+    email,
+    requestIp: requestInfo?.ip || '192.168.1.100',
+    userAgent: requestInfo?.userAgent || 'Chrome 119.0.0.0',
+    requestDate: requestInfo?.date || new Date().toLocaleString('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    })
+  };
+}
+
+function replaceTemplateVariables(template: string, variables: {
+  nombre: string;
+  resetLink: string;
+  email: string;
+  logoBase64?: string;
+  requestIp?: string;
+  userAgent?: string;
+  requestDate?: string;
+}): string {
+  let result = template;
+  
+  result = result.replace(/\{\{nombre\}\}/g, variables.nombre);
+  result = result.replace(/\{\{resetLink\}\}/g, variables.resetLink);
+  result = result.replace(/\{\{email\}\}/g, variables.email);
+  result = result.replace(/\{\{requestIp\}\}/g, variables.requestIp || '192.168.1.100');
+  result = result.replace(/\{\{userAgent\}\}/g, variables.userAgent || 'Chrome 119.0.0.0');
+  result = result.replace(/\{\{requestDate\}\}/g, variables.requestDate || new Date().toLocaleString('es-AR'));
+  
+  if (variables.logoBase64) {
+    result = result.replace(/\{\{logoBase64\}\}/g, variables.logoBase64);
+  }
+  
+  return result;
+}
 
 export async function POST(request: NextRequest) {
   let connection;
@@ -40,19 +116,44 @@ export async function POST(request: NextRequest) {
 
     const usuario = usuarios[0];
 
-    // Generar token único
-    const token = crypto.randomBytes(32).toString('hex');
-    const expiraEn = new Date();
-    expiraEn.setHours(expiraEn.getHours() + 1); // Token válido por 1 hora
+    // Preparar variables del template
+    const requestInfo = {
+      ip: request.headers.get('x-forwarded-for') || request.ip || '192.168.1.100',
+      userAgent: request.headers.get('user-agent') || 'Chrome 119.0.0.0',
+      date: new Date().toLocaleString('es-AR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      })
+    };
 
-    // Guardar token en la base de datos
+    const templateVars = prepareEmailTemplate(email, usuario.nombre_completo, requestInfo);
+
+    // Generar token y guardar en BD
+    const expiraEn = new Date();
+    expiraEn.setHours(expiraEn.getHours() + 1);
+
     await connection.execute(
       'INSERT INTO password_reset_tokens (usuario_id, token, expira_en) VALUES (?, ?, ?)',
-      [usuario.id, token, expiraEn]
+      [usuario.id, templateVars.token, expiraEn]
     );
 
-    // Crear enlace de recuperación
-    const resetLink = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/reset-password/${token}`;
+    // Cargar template HTML
+    const templatePath = path.join(process.cwd(), 'src/templates/recovery-email-premium-minimal.html');
+    let template = fs.readFileSync(templatePath, 'utf-8');
+
+    // Generar QR code
+    const qrCodeDataURL = await generateQRCodeDataURL(templateVars.resetLink);
+    template = template.replace(
+      /<svg width="100" height="100" viewBox="0 0 100 100" fill="none">[\s\S]*?<\/svg>/,
+      `<img src="${qrCodeDataURL}" alt="QR Code" width="100" height="100" style="display: block;" />`
+    );
+
+    // Reemplazar variables en el template
+    const htmlContent = replaceTemplateVariables(template, templateVars);
 
     // Configurar transporter de Gmail
     const transporter = nodemailer.createTransport({
@@ -63,131 +164,17 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Plantilla del email
+    // Enviar email con template premium
     const mailOptions = {
       from: `"Laboratorio 3D" <${process.env.GMAIL_USER}>`,
       to: usuario.email,
       subject: '🔐 Recuperación de Contraseña - Laboratorio 3D',
-      html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <style>
-            body {
-              font-family: Arial, sans-serif;
-              line-height: 1.6;
-              color: #333;
-              background-color: #f4f4f4;
-              margin: 0;
-              padding: 0;
-            }
-            .container {
-              max-width: 600px;
-              margin: 40px auto;
-              background: #ffffff;
-              border-radius: 10px;
-              overflow: hidden;
-              box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            }
-            .header {
-              background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-              padding: 30px;
-              text-align: center;
-            }
-            .header h1 {
-              color: white;
-              margin: 0;
-              font-size: 24px;
-            }
-            .content {
-              padding: 40px 30px;
-            }
-            .button {
-              display: inline-block;
-              padding: 15px 30px;
-              background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
-              color: white !important;
-              text-decoration: none;
-              border-radius: 8px;
-              font-weight: bold;
-              margin: 20px 0;
-            }
-            .footer {
-              background: #f8f8f8;
-              padding: 20px;
-              text-align: center;
-              font-size: 12px;
-              color: #666;
-            }
-            .warning {
-              background: #fff3cd;
-              border-left: 4px solid #ffc107;
-              padding: 15px;
-              margin: 20px 0;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <div class="header">
-              <h1>🔐 Recuperación de Contraseña</h1>
-            </div>
-            <div class="content">
-              <p>Hola <strong>${usuario.nombre_completo}</strong>,</p>
-              
-              <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta en Laboratorio 3D.</p>
-              
-              <p>Haz clic en el botón de abajo para crear una nueva contraseña:</p>
-              
-              <div style="text-align: center;">
-                <a href="${resetLink}" class="button">Restablecer Contraseña</a>
-              </div>
-              
-              <p>O copia y pega este enlace en tu navegador:</p>
-              <p style="word-break: break-all; color: #666; font-size: 14px;">
-                ${resetLink}
-              </p>
-              
-              <div class="warning">
-                <strong>⚠️ Importante:</strong>
-                <ul style="margin: 10px 0;">
-                  <li>Este enlace expira en <strong>1 hora</strong></li>
-                  <li>Si no solicitaste este cambio, ignora este email</li>
-                  <li>Tu contraseña actual seguirá funcionando</li>
-                </ul>
-              </div>
-              
-              <p>Si tienes alguna pregunta, contáctanos.</p>
-              
-              <p>Saludos,<br><strong>Equipo de Laboratorio 3D</strong></p>
-            </div>
-            <div class="footer">
-              <p>© ${new Date().getFullYear()} Laboratorio 3D. Todos los derechos reservados.</p>
-              <p>Este es un email automático, por favor no respondas a este mensaje.</p>
-            </div>
-          </div>
-        </body>
-        </html>
-      `,
+      html: htmlContent,
     };
 
     // Enviar email
-    try {
-      await transporter.sendMail(mailOptions);
-      console.log('✅ Email de recuperación enviado a:', usuario.email);
-    } catch (emailError: any) {
-      console.error('❌ Error al enviar email:', emailError);
-      // En desarrollo, mostrar el enlace si falla el email
-      if (process.env.NODE_ENV === 'development') {
-        console.log('🔗 Enlace de recuperación (desarrollo):', resetLink);
-        return NextResponse.json({
-          success: true,
-          message: 'Email no enviado (desarrollo)',
-          resetLink,
-        });
-      }
-      throw new Error('Error al enviar email');
-    }
+    await transporter.sendMail(mailOptions);
+    console.log('✅ Email premium enviado a:', usuario.email);
 
     return NextResponse.json({
       success: true,

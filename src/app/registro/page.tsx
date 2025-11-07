@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
@@ -80,7 +80,8 @@ export default function RegistroPage() {
   const router = useRouter();
   const { registro } = useAuthStore();
   const [formData, setFormData] = useState({
-    nombre_completo: '',
+    nombre: '',
+    apellido: '',
     dni: '',
     email: '',
     password: '',
@@ -94,6 +95,15 @@ export default function RegistroPage() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [mostrarExtras, setMostrarExtras] = useState(false);
+
+  // Auto-expande cuando los 3 campos básicos están completos
+  useEffect(() => {
+    const basicsOk = formData.nombre.trim().length > 0 
+      && formData.apellido.trim().length > 0 
+      && formData.dni.trim().length > 0;
+    if (basicsOk && !mostrarExtras) setMostrarExtras(true);
+  }, [formData.nombre, formData.apellido, formData.dni, mostrarExtras]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -121,6 +131,7 @@ export default function RegistroPage() {
     try {
       await registro({
         ...formData,
+        nombre_completo: `${formData.nombre} ${formData.apellido}`.trim(),
         acepta_terminos: true,
         acepta_privacidad: true,
       });
@@ -136,7 +147,7 @@ export default function RegistroPage() {
 
   return (
     <div className="min-h-screen bg-[#181818] text-[#e0e0e0]">
-      <main className="w-full max-w-5xl mx-auto pt-28 pb-12 px-4">
+      <main className="w-full max-w-6xl mx-auto pt-28 pb-12 px-4">
         <section className="text-center mb-12">
           {/* Logo */}
           <img 
@@ -157,7 +168,7 @@ export default function RegistroPage() {
         </section>
 
         {/* Card del formulario */}
-        <div className="max-w-md mx-auto rounded-2xl p-8 backdrop-blur-sm bg-white/5 border border-white/10">
+        <div className="max-w-3xl mx-auto rounded-2xl p-6 backdrop-blur-sm bg-white/5 border border-white/10">
           {/* Mensaje de error */}
           {error && (
             <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-xl">
@@ -166,28 +177,38 @@ export default function RegistroPage() {
           )}
 
           {/* Formulario */}
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Nombre Completo */}
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Nombre */}
             <div>
-              <label className="block text-sm font-medium mb-2 text-[#e0e0e0]">
-                Nombre Completo
-              </label>
+              <label className="block text-sm font-medium mb-2 text-[#e0e0e0]">Nombre</label>
               <input
                 type="text"
-                name="nombre_completo"
-                value={formData.nombre_completo}
+                name="nombre"
+                value={formData.nombre}
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-[#666666] focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                placeholder="Tu nombre completo"
+                placeholder="Tu nombre"
+              />
+            </div>
+
+            {/* Apellido */}
+            <div>
+              <label className="block text-sm font-medium mb-2 text-[#e0e0e0]">Apellido</label>
+              <input
+                type="text"
+                name="apellido"
+                value={formData.apellido}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-[#666666] focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                placeholder="Tu apellido"
               />
             </div>
 
             {/* DNI */}
-            <div>
-              <label className="block text-sm font-medium mb-2 text-[#e0e0e0]">
-                DNI
-              </label>
+            <div className="md:col-span-2">
+              <label className="block text-sm font-medium mb-2 text-[#e0e0e0]">DNI</label>
               <input
                 type="text"
                 name="dni"
@@ -199,93 +220,93 @@ export default function RegistroPage() {
               />
             </div>
 
-            {/* Email */}
-            <div>
-              <label className="block text-sm font-medium mb-2 text-[#e0e0e0]">
-                Email
-              </label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-[#666666] focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                placeholder="tu@email.com"
-              />
-            </div>
-
-            {/* Contraseña */}
-            <div>
-              <label className="block text-sm font-medium mb-2 text-[#e0e0e0]">
-                Contraseña <span className="text-[#666666]">(mín. 8 caracteres)</span>
-              </label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                required
-                minLength={8}
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-[#666666] focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                placeholder="••••••••"
-              />
-            </div>
-
-            {/* Confirmar Contraseña */}
-            <div>
-              <label className="block text-sm font-medium mb-2 text-[#e0e0e0]">
-                Confirmar Contraseña
-              </label>
-              <input
-                type="password"
-                name="password_confirmation"
-                value={formData.password_confirmation}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-[#666666] focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                placeholder="••••••••"
-              />
-            </div>
-
-            {/* Instagram (opcional) */}
-            <div>
-              <label className="block text-sm font-medium mb-2 text-[#e0e0e0]">
-                Instagram <span className="text-[#666666]">(opcional)</span>
-              </label>
-              <input
-                type="text"
-                name="instagram"
-                value={formData.instagram}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-[#666666] focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                placeholder="@tuusuario"
-              />
-            </div>
-
-            {/* Código de Referido */}
-            <div>
-              <label className="block text-sm font-medium mb-2 text-[#e0e0e0]">
-                Código de Referido <span className="text-[#666666]">(opcional)</span>
-              </label>
-              <input
-                type="text"
-                name="codigo_referido"
-                value={formData.codigo_referido}
-                onChange={handleChange}
-                className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-[#666666] focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
-                placeholder="AMIGO123"
-              />
-            </div>
-
-            {/* Botón de submit */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full px-12 py-6 text-xl font-bold rounded-full bg-[#3498db] text-white transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:bg-[#2980b9] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 mt-6"
+            {/* Sección expandible animada */}
+            <div
+              className={`md:col-span-2 overflow-hidden transition-all duration-500 ${mostrarExtras ? 'max-h-[2000px] opacity-100 mt-1' : 'max-h-0 opacity-0'}`}
+              aria-hidden={!mostrarExtras}
             >
-              {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
-            </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Email */}
+                <div className="md:col-span-1">
+                  <label className="block text-sm font-medium mb-2 text-[#e0e0e0]">Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-[#666666] focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                    placeholder="tu@email.com"
+                  />
+                </div>
+
+                {/* Contraseña */}
+                <div className="md:col-span-1">
+                  <label className="block text-sm font-medium mb-2 text-[#e0e0e0]">Contraseña <span className="text-[#666666]">(mín. 8 caracteres)</span></label>
+                  <input
+                    type="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    minLength={8}
+                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-[#666666] focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                    placeholder="••••••••"
+                  />
+                </div>
+
+                {/* Confirmar Contraseña */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium mb-2 text-[#e0e0e0]">Confirmar Contraseña</label>
+                  <input
+                    type="password"
+                    name="password_confirmation"
+                    value={formData.password_confirmation}
+                    onChange={handleChange}
+                    required
+                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-[#666666] focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                    placeholder="••••••••"
+                  />
+                </div>
+
+                {/* Instagram (opcional) */}
+                <div className="md:col-span-1">
+                  <label className="block text-sm font-medium mb-2 text-[#e0e0e0]">Instagram <span className="text-[#666666]">(opcional)</span></label>
+                  <input
+                    type="text"
+                    name="instagram"
+                    value={formData.instagram}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-[#666666] focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                    placeholder="@tuusuario"
+                  />
+                </div>
+
+                {/* Código de Referido */}
+                <div className="md:col-span-1">
+                  <label className="block text-sm font-medium mb-2 text-[#e0e0e0]">Código de Referido <span className="text-[#666666]">(opcional)</span></label>
+                  <input
+                    type="text"
+                    name="codigo_referido"
+                    value={formData.codigo_referido}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white placeholder-[#666666] focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20 transition-all"
+                    placeholder="AMIGO123"
+                  />
+                </div>
+
+                {/* Botón de submit */}
+                <div className="md:col-span-2 mt-2">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full px-8 py-5 text-lg font-bold rounded-full bg-[#3498db] text-white transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:bg-[#2980b9] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 mt-2"
+                  >
+                    {loading ? 'Creando cuenta...' : 'Crear Cuenta'}
+                  </button>
+                </div>
+              </div>
+            </div>
           </form>
 
           {/* Link a login */}

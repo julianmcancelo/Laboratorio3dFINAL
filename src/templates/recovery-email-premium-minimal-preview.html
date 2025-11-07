@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recuperación de contraseña | Laboratorio 3D</title>
+  
+  <!-- Email client optimization -->
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+  
+  <style>
+    /* Base styles - minimalista con mejoras */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    /* Dark mode support - sutil */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: #1a1a1a;
+      }
+      .container {
+        background: #2d2d2d !important;
+        border-color: #404040 !important;
+      }
+      .content {
+        color: #e0e0e0 !important;
+      }
+      h1 {
+        color: #ffffff !important;
+      }
+      p {
+        color: #b0b0b0 !important;
+      }
+      .footer {
+        color: #888888 !important;
+        border-color: #404040 !important;
+      }
+      .button {
+        background: #4a90e2 !important;
+      }
+      .button:hover {
+        background: #357abd !important;
+      }
+      .link-fallback {
+        background: #333333 !important;
+        border-color: #555555 !important;
+        color: #cccccc !important;
+      }
+    }
+    
+    /* Container - minimalista con mejoras */
+    .container {
+      max-width: 500px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+    }
+    
+    /* Header - limpio pero con logo base64 */
+    .header {
+      background: #181818;
+      padding: 32px 24px;
+      text-align: center;
+    }
+    
+    .logo {
+      height: 64px;
+      margin: 0 auto;
+      filter: brightness(1.1);
+    }
+    
+    /* Content - minimalista mejorado */
+    .content {
+      padding: 32px 24px;
+      color: #374151;
+    }
+    
+    /* Typography - minimalista con mejoras */
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0 0 16px;
+      color: #1f2937;
+    }
+    
+    .greeting {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 0 0 12px;
+      color: #1f2937;
+    }
+    
+    p {
+      font-size: 15px;
+      line-height: 1.6;
+      margin: 0 0 20px;
+      color: #4b5563;
+    }
+    
+    /* Button - minimalista con mejoras técnicas */
+    .button {
+      display: inline-block;
+      background: #3498db;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 14px 28px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+    }
+    
+    .button:hover {
+      background: #2980b9;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+    }
+    
+    /* Security info - minimalista */
+    .security-info {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 20px 0;
+      font-size: 13px;
+      color: #6c757d;
+    }
+    
+    .security-info strong {
+      color: #495057;
+    }
+    
+    /* Link fallback - minimalista mejorado */
+    .link-fallback {
+      background: #f8f9fa;
+      border: 1px solid #e9ecef;
+      border-radius: 6px;
+      padding: 14px;
+      margin: 16px 0;
+      word-break: break-all;
+      font-size: 12px;
+      color: #495057;
+      font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
+    }
+    
+    /* Footer - minimalista con links útiles */
+    .footer {
+      background: #f8f9fa;
+      padding: 24px;
+      text-align: center;
+      font-size: 12px;
+      color: #6c757d;
+      border-top: 1px solid #e9ecef;
+    }
+    
+    .footer-links {
+      margin-bottom: 16px;
+    }
+    
+    .footer-link {
+      color: #3498db;
+      text-decoration: none;
+      margin: 0 8px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    
+    .footer-link:hover {
+      color: #2980b9;
+      text-decoration: underline;
+    }
+    
+    .divider {
+      height: 1px;
+      background: #e9ecef;
+      margin: 16px 0;
+    }
+    
+    /* Responsive mejorado */
+    @media (max-width: 600px) {
+      .container {
+        margin: 20px 16px;
+        border-radius: 12px;
+      }
+      
+      .header {
+        padding: 24px 20px;
+      }
+      
+      .logo {
+        height: 56px;
+      }
+      
+      .content {
+        padding: 24px 20px;
+      }
+      
+      h1 {
+        font-size: 22px;
+      }
+      
+      .footer {
+        padding: 20px;
+      }
+      
+      .footer-link {
+        display: block;
+        margin: 4px 0;
+      }
+    }
+    
+    /* Fallback para clientes viejos */
+    .fallback-text {
+      display: none;
+    }
+    
+    @media screen and (max-width: 600px) {
+      .fallback-text {
+        display: block;
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background: white;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header con logo base64 -->
+    <div class="header">
+      <img src="https://acdn-us.mitiendanube.com/stores/005/528/607/themes/common/logo-309059401-1733509141-c82e57a23bb99e23f909d3dbc85a9.png?0" alt="Laboratorio 3D" class="logo">
+    </div>
+    
+    <!-- Content minimalista mejorado -->
+    <div class="content">
+      <h1>Recuperá tu contraseña</h1>
+      
+      <p class="greeting">Hola Juan Pérez,</p>
+      
+      <p>Recibimos una solicitud para restablecer tu contraseña. Hacé clic en el siguiente enlace para crear una nueva:</p>
+      
+      <!-- Botón principal -->
+      <div style="text-align: center; margin: 24px 0;">
+        <a href="https://laboratorio3d.com/reset-password?token=a1b2c3d4e4f6789234545667878904566789090090abcdef&email=juan%40email.com" class="button">
+          Restablecer contraseña
+        </a>
+      </div>
+      
+      <p>Este enlace expirará en <strong>1 hora</strong> por seguridad. Si no solicitaste este cambio, podés ignorar este correo.</p>
+      
+      <!-- QR Code section - minimalista -->
+      <div style="text-align: center; margin: 24px 0;">
+        <p style="font-size: 13px; color: #6c757d; margin-bottom: 12px;">📱 Escanéa desde tu móvil</p>
+        <div style="display: inline-block; padding: 12px; background: white; border: 1px solid #e9ecef; border-radius: 8px;">
+          <!-- QR code placeholder - generado dinámicamente -->
+          <svg width="100" height="100" viewBox="0 0 100 100" fill="none">
+            <rect width="100" height="100" fill="white"/>
+            <path d="M8 8h20v20H8zM36 8h8v8h-8zM52 8h8v8h-8zM68 8h20v20H68zM8 36h8v8H8zM24 36h8v8h-8zM36 36h20v20H36zM68 36h8v8h-8zM84 36h8v8h-8zM8 52h8v8H8zM24 52h8v8h-8zM52 52h8v8h-8zM68 52h8v8h-8zM8 68h20v20H8zM36 68h8v8h-8zM52 68h8v8h-8zM68 68h20v20H68z" fill="black"/>
+          </svg>
+        </div>
+        <p style="font-size: 11px; color: #9ca3af; margin-top: 8px;">Apuntá tu cámara al código</p>
+      </div>
+
+      <!-- Info de seguridad minimalista -->
+      <div class="security-info">
+        <strong>🔒 Información de seguridad:</strong><br>
+        • Enlace único y temporal<br>
+        • Expira en 1 hora<br>
+        • Si no lo solicitaste, ignorá este mensaje
+      </div>
+      
+      <!-- Link fallback -->
+      <p style="font-weight: 600; margin-bottom: 8px; font-size: 14px;">Si el botón no funciona:</p>
+      <div class="link-fallback">
+        https://laboratorio3d.com/reset-password?token=a1b2c3d4e4f678923354567878784545090abcdef&email=juan%40email.com
+      </div>
+      
+      <!-- Info del request -->
+      <div style="font-size: 11px; color: #9ca3af; margin-top: 16px; padding: 12px; background: #f9fafb; border-radius: 6px;">
+        Request: 192.168.1.100 | 07/11/202202 16:08:45
+      </div>
+    </div>
+    
+    <!-- Footer minimalista con links útiles -->
+    <div class="footer">
+      <div class="footer-links">
+        <a href="#" class="footer-link">Reenviar correo</a>
+        <a href="mailto:soporte@laboratorio3d.com" class="footer-link">Soporte</a>
+        <a href="#" class="footer-link">Cancelar solicitud</a>
+      </div>
+      
+      <div class="divider"></div>
+      
+      <p>&copy; 2025 Laboratorio 3D. Todos los derechos reservados.</p>
+      <p style="margin-top: 6px;">
+        Enviado a juan@email.com | 
+        <a href="#" style="color: #3498db;">No quiero recibir estos correos</a>
+      </p>
+    </div>
+  </div>
+  
+  <!-- Fallback para clientes muy viejos -->
+  <div class="fallback-text">
+    <h2>Recuperación de contraseña</h2>
+    <p>Hola Juan Pérez,</p>
+    <p>Hacé clic en: https://laboratorio3d.com/reset-password?token=a1b2c3d4e4f67892335456787874545667800abcdef&email=juan%40email.com</p>
+    <p>Expira en 1 hora.</p>
+    <p>&copy; 2025 Laboratorio 3D</p>
+  </div>
+</body>
+</html>

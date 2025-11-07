@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recuperación de contraseña | Laboratorio 3D</title>
+  
+  <!-- Preview text for email clients -->
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="light dark">
+  <meta name="supported-color-schemes" content="light dark">
+  
+  <style>
+    /* Base styles */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    /* Dark mode support */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      }
+      .container {
+        background: #1f2937 !important;
+        border-color: #374151 !important;
+      }
+      .content {
+        color: #f3f4f6 !important;
+      }
+      h1 {
+        color: #ffffff !important;
+      }
+      p {
+        color: #d1d5db !important;
+      }
+      .footer {
+        color: #9ca3af !important;
+        border-color: #374151 !important;
+      }
+      .button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+      }
+      .button:hover {
+        background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important;
+      }
+      .feature-card {
+        background: #374151 !important;
+        border-color: #4b5563 !important;
+      }
+      .qr-section {
+        background: #374151 !important;
+        border-color: #4b5563 !important;
+      }
+    }
+    
+    /* Container */
+    .container {
+      max-width: 520px;
+      margin: 32px auto;
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+    }
+    
+    /* Header with gradient */
+    .header {
+      background: linear-gradient(135deg, #181818 0%, #2d3748 100%);
+      padding: 40px 32px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .header::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+      opacity: 0.3;
+    }
+    
+    .logo {
+      height: 72px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+      filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
+    }
+    
+    /* Content */
+    .content {
+      padding: 40px 32px;
+      color: #374151;
+    }
+    
+    /* Typography */
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin: 0 0 20px;
+      color: #1f2937;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .greeting {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0 0 16px;
+      color: #1f2937;
+    }
+    
+    p {
+      font-size: 16px;
+      line-height: 1.7;
+      margin: 0 0 24px;
+      color: #4b5563;
+    }
+    
+    /* Enhanced button */
+    .button {
+      display: inline-block;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #ffffff;
+      font-size: 17px;
+      font-weight: 600;
+      padding: 16px 32px;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4), 0 4px 6px -2px rgba(102, 126, 234, 0.3);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .button::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transition: left 0.5s;
+    }
+    
+    .button:hover::before {
+      left: 100%;
+    }
+    
+    .button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 25px -5px rgba(102, 126, 234, 0.5), 0 10px 10px -5px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Feature cards */
+    .features {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 32px 0;
+    }
+    
+    .feature-card {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    
+    .feature-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 12px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+    
+    .feature-title {
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+    
+    .feature-text {
+      font-size: 12px;
+      color: #6b7280;
+    }
+    
+    /* QR Code section */
+    .qr-section {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border: 1px solid #f59e0b;
+      border-radius: 12px;
+      padding: 24px;
+      margin: 24px 0;
+      text-align: center;
+    }
+    
+    .qr-title {
+      font-weight: 600;
+      color: #92400e;
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+    
+    .qr-code {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 12px;
+      background: white;
+      border-radius: 8px;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: #6b7280;
+    }
+    
+    .qr-text {
+      font-size: 12px;
+      color: #92400e;
+    }
+    
+    /* Security warning */
+    .security-warning {
+      background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+      border: 1px solid #f87171;
+      border-radius: 12px;
+      padding: 20px;
+      margin: 24px 0;
+    }
+    
+    .security-title {
+      font-weight: 600;
+      color: #991b1b;
+      margin-bottom: 8px;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .security-text {
+      font-size: 13px;
+      color: #b91c1c;
+    }
+    
+    /* Link fallback */
+    .link-fallback {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 16px;
+      margin: 20px 0;
+      word-break: break-all;
+      font-size: 13px;
+      color: #475569;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    }
+    
+    /* Footer */
+    .footer {
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      padding: 32px;
+      text-align: center;
+      font-size: 13px;
+      color: #6b7280;
+      border-top: 1px solid #e2e8f0;
+    }
+    
+    .footer-links {
+      margin-bottom: 20px;
+    }
+    
+    .footer-link {
+      color: #667eea;
+      text-decoration: none;
+      margin: 0 12px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+    
+    .footer-link:hover {
+      color: #764ba2;
+      text-decoration: underline;
+    }
+    
+    .social-links {
+      margin: 16px 0;
+    }
+    
+    .social-link {
+      display: inline-block;
+      width: 36px;
+      height: 36px;
+      margin: 0 8px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 50%;
+      color: white;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+    
+    .social-link:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(102, 126, 234, 0.4);
+    }
+    
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+      margin: 20px 0;
+    }
+    
+    /* Responsive */
+    @media (max-width: 600px) {
+      .container {
+        margin: 16px;
+        border-radius: 16px;
+      }
+      
+      .header {
+        padding: 32px 24px;
+      }
+      
+      .logo {
+        height: 56px;
+      }
+      
+      .content {
+        padding: 32px 24px;
+      }
+      
+      h1 {
+        font-size: 24px;
+      }
+      
+      .features {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      
+      .footer {
+        padding: 24px;
+      }
+      
+      .social-link {
+        margin: 0 4px;
+      }
+    }
+    
+    /* Fallback for old email clients */
+    .fallback-text {
+      display: none;
+    }
+    
+    @media screen and (max-width: 600px) {
+      .fallback-text {
+        display: block;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header with logo -->
+    <div class="header">
+      <img src="https://acdn-us.mitiendanube.com/stores/005/528/607/themes/common/logo-309059401-1733509141-c82e57a103c23bb99e23f909d3dbc85a1733509142.png?0" alt="Laboratorio 3D" class="logo">
+    </div>
+    
+    <!-- Main content -->
+    <div class="content">
+      <h1>Recuperá tu contraseña</h1>
+      
+      <p class="greeting">Hola Juan Pérez,</p>
+      
+      <p>Recibimos una solicitud para restablecer tu contraseña. Tu seguridad es nuestra prioridad, por lo que hemos generado un enlace seguro para que crees una nueva contraseña.</p>
+      
+      <!-- Main CTA button -->
+      <div style="text-align: center; margin: 32px 0;">
+        <a href="https://laboratorio3d.com/reset-password?token=a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456&email=juan%40email.com" class="button">
+          🔐 Restablecer contraseña
+        </a>
+      </div>
+      
+      <!-- Feature cards -->
+      <div class="features">
+        <div class="feature-card">
+          <div class="feature-icon">⏰</div>
+          <div class="feature-title">Expira en 1 hora</div>
+          <div class="feature-text">Por tu seguridad</div>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">🔒</div>
+          <div class="feature-title">Enlace único</div>
+          <div class="feature-text">Uso individual</div>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">📱</div>
+          <div class="feature-title">Mobile ready</div>
+          <div class="feature-text">Funciona en cualquier dispositivo</div>
+        </div>
+        
+        <div class="feature-card">
+          <div class="feature-icon">🛡️</div>
+          <div class="feature-title">100% Seguro</div>
+          <div class="feature-text">Encriptado de extremo a extremo</div>
+        </div>
+      </div>
+      
+      <!-- QR Code for mobile -->
+      <div class="qr-section">
+        <div class="qr-title">📱 Escanéa desde tu móvil</div>
+        <div class="qr-code">
+          <!-- QR code placeholder - would be generated dynamically -->
+          <svg width="104" height="104" viewBox="0 0 104 104" fill="none">
+            <rect width="104" height="104" fill="white"/>
+            <path d="M8 8h24v24H8zM40 8h8v8h-8zM56 8h8v8h-8zM72 8h24v24H72zM8 40h8v8H8zM24 40h8v8h-8zM40 40h24v24H40zM72 40h8v8h-8zM88 40h8v8h-8zM8 56h8v8H8zM24 56h8v8h-8zM56 56h8v8h-8zM72 56h8v8h-8zM8 72h24v24H8zM40 72h8v8h-8zM56 72h8v8h-8zM72 72h24v24H72z" fill="black"/>
+          </svg>
+        </div>
+        <div class="qr-text">Apuntá tu cámara al código</div>
+      </div>
+      
+      <!-- Security warning -->
+      <div class="security-warning">
+        <div class="security-title">
+          ⚠️ Importante: Seguridad
+        </div>
+        <div class="security-text">
+          • Este enlace expirará en <strong>1 hora</strong><br>
+          • Si no solicitaste este cambio, ignorá este correo<br>
+          • Nunca compartas este enlace con nadie<br>
+          • Nuestro equipo nunca te pedirá tu contraseña por email
+        </div>
+      </div>
+      
+      <!-- Link fallback -->
+      <p style="font-weight: 600; margin-bottom: 8px;">Si el botón no funciona:</p>
+      <div class="link-fallback">
+        https://laboratorio3d.com/reset-password?token=a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456&email=juan%40email.com
+      </div>
+      
+      <!-- Request info -->
+      <div style="font-size: 12px; color: #9ca3af; margin-top: 24px; padding: 16px; background: #f9fafb; border-radius: 8px;">
+        <strong>Información del request:</strong><br>
+        IP: 192.168.1.100 | Fecha: 07/11/2025 16:04:23 | Navegador: Chrome 119.0.0.0
+      </div>
+    </div>
+    
+    <!-- Enhanced footer -->
+    <div class="footer">
+      <div class="footer-links">
+        <a href="#" class="footer-link">🔄 Reenviar correo</a>
+        <a href="mailto:soporte@laboratorio3d.com" class="footer-link">💬 Soporte</a>
+        <a href="#" class="footer-link">📚 Centro de ayuda</a>
+        <a href="#" class="footer-link">🔐 Cancelar solicitud</a>
+      </div>
+      
+      <div class="divider"></div>
+      
+      <div class="social-links">
+        <a href="#" class="social-link">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+          </svg>
+        </a>
+        <a href="#" class="social-link">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+          </svg>
+        </a>
+        <a href="#" class="social-link">
+          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+          </svg>
+        </a>
+      </div>
+      
+      <div class="divider"></div>
+      
+      <p>&copy; 2025 Laboratorio 3D. Todos los derechos reservados.</p>
+      <p style="margin-top: 8px; font-size: 11px;">
+        Este correo fue enviado a juan@email.com. 
+        <a href="#" style="color: #667eea;">No quiero recibir estos correos</a>
+      </p>
+    </div>
+  </div>
+  
+  <!-- Fallback for very old clients -->
+  <div class="fallback-text" style="font-family: Arial; padding: 20px; background: white;">
+    <h2>Recuperación de contraseña</h2>
+    <p>Hola Juan Pérez,</p>
+    <p>Hacé clic en este enlace para restablecer tu contraseña: https://laboratorio3d.com/reset-password?token=a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef123456&email=juan%40email.com</p>
+    <p>Este enlace expirará en 1 hora.</p>
+    <p>&copy; 2025 Laboratorio 3D</p>
+  </div>
+</body>
+</html>

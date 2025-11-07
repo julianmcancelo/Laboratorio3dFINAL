@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recuperación de contraseña</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+    }
+    .container {
+      max-width: 480px;
+      margin: 40px auto;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    .header {
+      background: #181818;
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .logo {
+      height: 64px;
+      margin: 0 auto;
+    }
+    .content {
+      padding: 32px 24px;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin: 0 0 16px;
+      color: #181818;
+    }
+    p {
+      font-size: 16px;
+      line-height: 1.6;
+      margin: 0 0 24px;
+      color: #555;
+    }
+    .button {
+      display: inline-block;
+      background: #3498db;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .button:hover {
+      background: #2980b9;
+    }
+    .footer {
+      padding: 24px;
+      text-align: center;
+      font-size: 12px;
+      color: #999;
+      border-top: 1px solid #eee;
+    }
+    .footer a {
+      color: #3498db;
+      text-decoration: none;
+    }
+    .footer a:hover {
+      text-decoration: underline;
+    }
+    .debug {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 6px;
+      padding: 12px;
+      margin: 16px 0;
+      font-size: 12px;
+      color: #856404;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="https://acdn-us.mitiendanube.com/stores/005/528/607/themes/common/logo-309059401-1733509141-c82e57a103c23bb99e23f909d3dbc85a1733509142.png?0" alt="Laboratorio 3D" class="logo">
+    </div>
+    <div class="content">
+      <h1>Recuperá tu contraseña</h1>
+      <p>Hola Juan Pérez,</p>
+      <p>Recibimos una solicitud para restablecer tu contraseña. Hacé clic en el siguiente enlace para crear una nueva:</p>
+      <p style="text-align: center; margin: 32px 0;">
+        <a href="https://laboratorio3d.com/reset-password?token=a1b2c3d4e5f6789012345678901234567890abcdef&email=juan%40email.com" class="button">Restablecer contraseña</a>
+      </p>
+      <p>Este enlace expirará en <strong>1 hora</strong> por seguridad. Si no solicitaste este cambio, podés ignorar este correo.</p>
+      <p>Si el botón no funciona, copiá y pegá este enlace en tu navegador:</p>
+      <p style="word-break: break-all; background: #f5f5f5; padding: 12px; border-radius: 6px; font-size: 14px;">https://laboratorio3d.com/reset-password?token=a1b2c3d4e5f6789012345678901234567890abcdef&email=juan%40email.com</p>
+      
+      <!-- Info de debug para desarrollo -->
+      <div class="debug">
+        <strong>🔧 Info para desarrollo:</strong><br>
+        • Token: a1b2c3d4e5f6789012345678901234567890abcdef (64 caracteres hex)<br>
+        • Email: juan@email.com<br>
+        • Dominio: https://laboratorio3d.com (configurable via NEXT_PUBLIC_APP_URL)<br>
+        • Expiración: 1 hora (configurable)
+      </div>
+    </div>
+    <div class="footer">
+      <p>&copy; 2025 Laboratorio 3D. Todos los derechos reservados.</p>
+      <p>¿Necesitas ayuda? <a href="mailto:soporte@laboratorio3d.com">Contactanos</a></p>
+    </div>
+  </div>
+</body>
+</html>
