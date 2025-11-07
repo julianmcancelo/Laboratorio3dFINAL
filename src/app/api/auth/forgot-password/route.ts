@@ -17,6 +17,19 @@ function generateResetLink(token: string, email: string): string {
   return `${baseUrl}/reset-password?token=${token}&email=${encodedEmail}`;
 }
 
+async function getLogoBase64(): Promise<string> {
+  try {
+    const response = await fetch('https://acdn-us.mitiendanube.com/stores/005/528/607/themes/common/logo-309059401-1733509141-c82e57a23bb99e23f909d3dbc85a9.png?0');
+    const arrayBuffer = await response.arrayBuffer();
+    const base64 = Buffer.from(arrayBuffer).toString('base64');
+    return `data:image/png;base64,${base64}`;
+  } catch (error) {
+    console.error('Error al obtener logo:', error);
+    // Logo fallback en base64 (simple texto)
+    return 'data:image/svg+xml;base64,PHNNjKgoYgoY';
+  }
+}
+
 async function generateQRCodeDataURL(text: string): Promise<string> {
   return await QRCode.toDataURL(text, {
     width: 100,
@@ -170,15 +183,23 @@ export async function POST(request: NextRequest) {
     const templatePath = path.join(process.cwd(), 'src/templates/recovery-email-premium-minimal.html');
     let template = fs.readFileSync(templatePath, 'utf-8');
 
-    // Generar QR code
+    // Generar logo en base64
+    const logoBase64 = await getLogoBase64();
+
+    // Generar QR code en base64
     const qrCodeDataURL = await generateQRCodeDataURL(templateVars.resetLink);
+
+    // Reemplazar QR placeholder con QR real en base64
     template = template.replace(
       /<svg width="100" height="100" viewBox="0 0 100 100" fill="none">[\s\S]*?<\/svg>/,
       `<img src="${qrCodeDataURL}" alt="QR Code" width="100" height="100" style="display: block;" />`
     );
 
-    // Reemplazar variables en el template
-    const htmlContent = replaceTemplateVariables(template, templateVars);
+    // Reemplazar variables en el template (incluyendo logo base64)
+    const htmlContent = replaceTemplateVariables(template, {
+      ...templateVars,
+      logoBase64
+    });
 
     // Configurar transporter de Gmail
     const transporter = nodemailer.createTransport({
