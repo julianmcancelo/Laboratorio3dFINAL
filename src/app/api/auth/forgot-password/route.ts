@@ -17,18 +17,63 @@ function generateResetLink(token: string, email: string): string {
   return `${baseUrl}/reset-password?token=${token}&email=${encodedEmail}`;
 }
 
-async function getLogoBase64(): Promise<string> {
+async function getLogoBase64(usuarioId: number): Promise<string> {
   try {
     const fs = require('fs');
     const path = require('path');
-    const logoPath = path.join(process.cwd(), 'public/niveles/bronce.png');
+    
+    // Conectar a BD para obtener el nivel del usuario
+    const connection = await mysql.createConnection({
+      host: process.env.DB_HOST || '167.250.5.55',
+      user: process.env.DB_USER || 'jcancelo_3d',
+      password: process.env.DB_PASSWORD || 'feelthesky1',
+      database: process.env.DB_NAME || 'jcancelo_laboratorio3d',
+    });
+
+    // Obtener el nivel del usuario
+    const [usuarios]: any = await connection.execute(
+      'SELECT nivel_lealtad_id FROM usuarios WHERE id = ?',
+      [usuarioId]
+    );
+
+    await connection.end();
+
+    if (usuarios.length === 0) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    const nivelId = usuarios[0].nivel_lealtad_id || 1; // Default bronce
+
+    // Mapear nivel a archivo de imagen
+    const nivelImagenes: { [key: number]: string } = {
+      1: 'bronce.png',
+      2: 'plata.png', 
+      3: 'oro.png',
+      4: 'esmeralda.png',
+      5: 'diamante.png',
+      6: 'fundador.png'
+    };
+
+    const imagenNivel = nivelImagenes[nivelId] || 'bronce.png';
+    const logoPath = path.join(process.cwd(), `public/niveles/${imagenNivel}`);
+    
     const imageBytes = fs.readFileSync(logoPath);
     const base64 = Buffer.from(imageBytes).toString('base64');
     return `data:image/png;base64,${base64}`;
+    
   } catch (error) {
-    console.error('Error al obtener logo local:', error);
-    // Logo fallback - URL externa si falla el local
-    return 'https://acdn-us.mitiendanube.com/stores/005/528/607/themes/common/logo-309059401-1733509141-c82e57a103c23bb99e23f909d3dbc85a1733509142.png?0';
+    console.error('Error al obtener logo de nivel:', error);
+    // Logo fallback - bronce por defecto
+    try {
+      const fs = require('fs');
+      const path = require('path');
+      const logoPath = path.join(process.cwd(), 'public/niveles/bronce.png');
+      const imageBytes = fs.readFileSync(logoPath);
+      const base64 = Buffer.from(imageBytes).toString('base64');
+      return `data:image/png;base64,${base64}`;
+    } catch {
+      return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+    }
   }
 }
 
@@ -185,8 +230,8 @@ export async function POST(request: NextRequest) {
     const templatePath = path.join(process.cwd(), 'src/templates/recovery-email-premium-minimal.html');
     let template = fs.readFileSync(templatePath, 'utf-8');
 
-    // Generar logo en base64
-    const logoBase64 = await getLogoBase64();
+    // Generar logo en base64 según el nivel del usuario
+    const logoBase64 = await getLogoBase64(usuario.id);
 
     // Generar QR code en base64
     const qrCodeDataURL = await generateQRCodeDataURL(templateVars.resetLink);
