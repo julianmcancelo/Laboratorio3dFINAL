@@ -6,16 +6,16 @@ export async function POST(request: NextRequest) {
   let connection;
   
   try {
-    const { token, newPassword } = await request.json();
+    const { token, email, password } = await request.json();
 
-    if (!token || !newPassword) {
+    if (!token || !email || !password) {
       return NextResponse.json(
-        { success: false, error: 'Token y nueva contraseña son requeridos' },
+        { success: false, error: 'Token, email y contraseña son requeridos' },
         { status: 400 }
       );
     }
 
-    if (newPassword.length < 6) {
+    if (password.length < 6) {
       return NextResponse.json(
         { success: false, error: 'La contraseña debe tener al menos 6 caracteres' },
         { status: 400 }
@@ -24,13 +24,13 @@ export async function POST(request: NextRequest) {
 
     // Conectar a la base de datos
     connection = await mysql.createConnection({
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '',
+      host: process.env.DB_HOST || '167.250.5.55',
+      user: process.env.DB_USER || 'jcancelo_3d',
+      password: process.env.DB_PASSWORD || 'feelthesky1',
       database: process.env.DB_NAME || 'jcancelo_laboratorio3d',
     });
 
-    // Verificar token
+    // Verificar token y email
     const [tokens]: any = await connection.execute(
       `SELECT prt.*, u.email, u.nombre_completo
        FROM password_reset_tokens prt
@@ -48,8 +48,16 @@ export async function POST(request: NextRequest) {
 
     const resetToken = tokens[0];
 
+    // Verificar que el email coincida
+    if (resetToken.email.toLowerCase() !== email.toLowerCase()) {
+      return NextResponse.json(
+        { success: false, error: 'Email no coincide con el token' },
+        { status: 400 }
+      );
+    }
+
     // Hashear nueva contraseña
-    const passwordHash = await bcrypt.hash(newPassword, 10);
+    const passwordHash = await bcrypt.hash(password, 10);
 
     // Actualizar contraseña del usuario
     await connection.execute(
