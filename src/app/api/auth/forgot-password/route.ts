@@ -83,6 +83,31 @@ export async function POST(request: NextRequest) {
   let connection;
   
   try {
+    // Verificar variables críticas
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+      console.error('❌ Variables de Gmail no configuradas');
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Configuración de email no disponible. Contacte al administrador.',
+          debug: process.env.NODE_ENV === 'development' ? 'GMAIL_USER o GMAIL_APP_PASSWORD faltantes' : undefined
+        },
+        { status: 500 }
+      );
+    }
+
+    if (!process.env.DATABASE_URL) {
+      console.error('❌ DATABASE_URL no configurada');
+      return NextResponse.json(
+        { 
+          success: false, 
+          error: 'Error de configuración de base de datos',
+          debug: process.env.NODE_ENV === 'development' ? 'DATABASE_URL faltante' : undefined
+        },
+        { status: 500 }
+      );
+    }
+
     const { email } = await request.json();
 
     if (!email) {
