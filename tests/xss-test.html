@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test XSS</title>
+</head>
+<body>
+    <h1>Test de XSS Protection</h1>
+    
+    <!-- Intento 1: Script inline -->
+    <div>
+        <input type="text" id="test1" value="<script>alert('XSS1')</script>">
+        <button onclick="document.getElementById('output1').innerHTML = document.getElementById('test1').value">
+            Test Script Inline
+        </button>
+        <div id="output1"></div>
+    </div>
+
+    <!-- Intento 2: Event handler -->
+    <div>
+        <img src="invalid" onerror="alert('XSS2')" />
+    </div>
+
+    <!-- Intento 3: JavaScript URL -->
+    <div>
+        <a href="javascript:alert('XSS3')">Click aquí</a>
+    </div>
+
+    <p><strong>Si ves alertas, hay vulnerabilidad XSS</strong></p>
+</body>
+</html>
