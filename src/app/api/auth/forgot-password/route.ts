@@ -19,14 +19,16 @@ function generateResetLink(token: string, email: string): string {
 
 async function getLogoBase64(): Promise<string> {
   try {
-    const response = await fetch('https://acdn-us.mitiendanube.com/stores/005/528/607/themes/common/logo-309059401-1733509141-c82e57a23bb99e23f909d3dbc85a9.png?0');
-    const arrayBuffer = await response.arrayBuffer();
-    const base64 = Buffer.from(arrayBuffer).toString('base64');
+    const fs = require('fs');
+    const path = require('path');
+    const logoPath = path.join(process.cwd(), 'public/niveles/bronce.png');
+    const imageBytes = fs.readFileSync(logoPath);
+    const base64 = Buffer.from(imageBytes).toString('base64');
     return `data:image/png;base64,${base64}`;
   } catch (error) {
-    console.error('Error al obtener logo:', error);
-    // Logo fallback en base64 (simple texto)
-    return 'data:image/svg+xml;base64,PHNNjKgoYgoY';
+    console.error('Error al obtener logo local:', error);
+    // Logo fallback - URL externa si falla el local
+    return 'https://acdn-us.mitiendanube.com/stores/005/528/607/themes/common/logo-309059401-1733509141-c82e57a103c23bb99e23f909d3dbc85a1733509142.png?0';
   }
 }
 
