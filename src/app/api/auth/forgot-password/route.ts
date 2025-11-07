@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
 
     // Verificar si el usuario existe
     const [usuarios]: any = await connection.execute(
-      'SELECT id, nombre_completo, email FROM usuarios WHERE email = ? AND activo = TRUE',
+      'SELECT id, nombre_completo, email FROM usuarios WHERE email = ?',
       [email]
     );
 
