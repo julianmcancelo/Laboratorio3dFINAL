@@ -19,9 +19,6 @@ function generateResetLink(token: string, email: string): string {
 
 async function getLogoBase64(usuarioId: number): Promise<string> {
   try {
-    const fs = require('fs');
-    const path = require('path');
-    
     // Conectar a BD para obtener el nivel del usuario
     const connection = await mysql.createConnection({
       host: process.env.DB_HOST || '167.250.5.55',
@@ -44,36 +41,22 @@ async function getLogoBase64(usuarioId: number): Promise<string> {
 
     const nivelId = usuarios[0].nivel_lealtad_id || 1; // Default bronce
 
-    // Mapear nivel a archivo de imagen
+    // Mapear nivel a URL pública de la imagen
     const nivelImagenes: { [key: number]: string } = {
-      1: 'bronce.png',
-      2: 'plata.png', 
-      3: 'oro.png',
-      4: 'esmeralda.png',
-      5: 'diamante.png',
-      6: 'fundador.png'
+      1: 'https://laboratorio3dc.vercel.app/niveles/bronce.png',
+      2: 'https://laboratorio3dc.vercel.app/niveles/plata.png', 
+      3: 'https://laboratorio3dc.vercel.app/niveles/oro.png',
+      4: 'https://laboratorio3dc.vercel.app/niveles/esmeralda.png',
+      5: 'https://laboratorio3dc.vercel.app/niveles/diamante.png',
+      6: 'https://laboratorio3dc.vercel.app/niveles/fundador.png'
     };
 
-    const imagenNivel = nivelImagenes[nivelId] || 'bronce.png';
-    const logoPath = path.join(process.cwd(), `public/niveles/${imagenNivel}`);
-    
-    const imageBytes = fs.readFileSync(logoPath);
-    const base64 = Buffer.from(imageBytes).toString('base64');
-    return `data:image/png;base64,${base64}`;
+    return nivelImagenes[nivelId] || nivelImagenes[1];
     
   } catch (error) {
     console.error('Error al obtener logo de nivel:', error);
-    // Logo fallback - bronce por defecto
-    try {
-      const fs = require('fs');
-      const path = require('path');
-      const logoPath = path.join(process.cwd(), 'public/niveles/bronce.png');
-      const imageBytes = fs.readFileSync(logoPath);
-      const base64 = Buffer.from(imageBytes).toString('base64');
-      return `data:image/png;base64,${base64}`;
-    } catch {
-      return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
-    }
+    // Logo fallback - URL por defecto
+    return 'https://laboratorio3dc.vercel.app/niveles/bronce.png';
   }
 }
 
@@ -242,10 +225,10 @@ export async function POST(request: NextRequest) {
       `<img src="${qrCodeDataURL}" alt="QR Code" width="100" height="100" style="display: block;" />`
     );
 
-    // Reemplazar variables en el template (incluyendo logo base64)
+    // Reemplazar variables en el template (ahora usa URL en lugar de base64)
     const htmlContent = replaceTemplateVariables(template, {
       ...templateVars,
-      logoBase64
+      logoBase64: logoBase64 // Ahora es una URL, no base64
     });
 
     // Configurar transporter de Gmail
