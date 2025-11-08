@@ -210,7 +210,7 @@ export async function POST(request: NextRequest) {
     );
 
     // Cargar template HTML
-    const templatePath = path.join(process.cwd(), 'src/templates/recovery-email-premium-minimal.html');
+    const templatePath = path.join(process.cwd(), 'src/templates/recovery-email-clean.html');
     let template = fs.readFileSync(templatePath, 'utf-8');
 
     // Generar logo en base64 según el nivel del usuario
@@ -221,7 +221,7 @@ export async function POST(request: NextRequest) {
 
     // Reemplazar QR placeholder con QR real en base64
     template = template.replace(
-      /<svg width="100" height="100" viewBox="0 0 100 100" fill="none">[\s\S]*?<\/svg>/,
+      /<svg[^>]*><\/svg>/,
       `<img src="${qrCodeDataURL}" alt="QR Code" width="100" height="100" style="display: block;" />`
     );
 

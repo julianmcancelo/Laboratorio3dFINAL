@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recuperación de Contraseña</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #f5f5f7;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 580px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
+    .header {
+      background: white;
+      padding: 32px 24px 24px;
+      text-align: center;
+      border-bottom: 1px solid #e5e5e7;
+    }
+    
+    .content {
+      padding: 32px 24px;
+    }
+    
+    h1 {
+      color: #1d1d1f;
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      letter-spacing: -0.3px;
+    }
+    
+    p {
+      color: #6e6e73;
+      line-height: 1.5;
+      margin-bottom: 16px;
+      font-size: 15px;
+    }
+    
+    .greeting {
+      color: #1d1d1f;
+      font-size: 16px;
+      font-weight: 500;
+    }
+    
+    .button {
+      display: inline-block;
+      padding: 14px 28px;
+      background: #0071e3;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 15px;
+      margin: 20px 0;
+    }
+    
+    .qr-section {
+      background: #f5f5f7;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 24px 0;
+      text-align: center;
+    }
+    
+    .qr-section p {
+      color: #1d1d1f;
+      font-weight: 500;
+      margin-bottom: 12px;
+    }
+    
+    .security-info {
+      background: #f5f5f7;
+      padding: 16px;
+      margin: 24px 0;
+      border-radius: 8px;
+    }
+    
+    .security-info p {
+      font-size: 13px;
+      color: #6e6e73;
+    }
+    
+    .security-info strong {
+      color: #1d1d1f;
+      display: block;
+      margin-bottom: 8px;
+    }
+    
+    .footer {
+      background: #f5f5f7;
+      padding: 20px 24px;
+      text-align: center;
+      font-size: 12px;
+      color: #86868b;
+      border-top: 1px solid #e5e5e7;
+    }
+    
+    .footer p {
+      font-size: 12px;
+      color: #86868b;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div style="text-align: center; padding: 20px;">
+        <img src="{{logoBase64}}" alt="Laboratorio 3D Logo" style="max-width: 200px; height: auto;">
+      </div>
+    </div>
+    
+    <div class="content">
+      <h1>Recuperá tu contraseña</h1>
+      
+      <p class="greeting">Hola {{nombre}},</p>
+      
+      <p>Recibimos una solicitud para restablecer tu contraseña. Hacé clic en el botón para crear una nueva:</p>
+      
+      <div style="text-align: center;">
+        <a href="{{resetLink}}" class="button">Restablecer Contraseña</a>
+      </div>
+      
+      <div class="qr-section">
+        <p>Escanea desde tu móvil</p>
+        <div style="display: inline-block; padding: 12px; background: white; border-radius: 8px;">
+          <svg width="100" height="100" viewBox="0 0 100 100" fill="none"></svg>
+        </div>
+      </div>
+      
+      <div class="security-info">
+        <strong>Información de seguridad</strong>
+        <p>
+          • Este enlace expira en 1 hora<br>
+          • Si no solicitaste este cambio, ignorá este email<br>
+          • Solicitud desde: {{requestIp}}<br>
+          • Fecha: {{requestDate}}
+        </p>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <p>© 2024 Laboratorio 3D. Todos los derechos reservados.</p>
+      <p>Este es un email automático, por favor no respondas.</p>
+    </div>
+  </div>
+</body>
+</html>
